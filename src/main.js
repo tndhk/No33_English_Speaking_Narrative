@@ -140,9 +140,22 @@ function handlePrev() {
     renderStep();
 }
 
-async function generateNarrative() {
+
+// Helper for loading state
+window.showLoading = (message = 'Processing...') => {
     const loader = document.getElementById('loading-overlay');
-    loader.style.display = 'flex';
+    const text = document.getElementById('loading-text');
+    if (text) text.textContent = message;
+    if (loader) loader.style.display = 'flex';
+};
+
+window.hideLoading = () => {
+    const loader = document.getElementById('loading-overlay');
+    if (loader) loader.style.display = 'none';
+};
+
+async function generateNarrative() {
+    window.showLoading('Crafting your narrative...');
 
     try {
         const response = await fetch('/api/generate', {
@@ -162,7 +175,7 @@ async function generateNarrative() {
     } catch (error) {
         alert('生成に失敗しました: ' + error.message);
     } finally {
-        loader.style.display = 'none';
+        window.hideLoading();
     }
 }
 
@@ -263,7 +276,10 @@ window.download = () => {
 /**
  * Save narrative to localStorage and schedule for review
  */
-window.saveNarrativeForReview = () => {
+/**
+ * Save narrative to localStorage and schedule for review
+ */
+window.saveNarrativeForReview = async () => {
     try {
         if (!state.narrative) {
             alert('No narrative to save');
@@ -276,7 +292,8 @@ window.saveNarrativeForReview = () => {
             settings: state.settings
         };
 
-        const saved = window.storage?.saveNarrative(state.narrative, metadata);
+        window.showLoading('Saving narrative...');
+        const saved = await window.storage?.saveNarrative(state.narrative, metadata);
 
         if (saved) {
             alert('✅ Narrative saved! Ready for review.');
@@ -288,47 +305,63 @@ window.saveNarrativeForReview = () => {
     } catch (error) {
         console.error('Save error:', error);
         alert('Save failed: ' + error.message);
+    } finally {
+        window.hideLoading();
     }
 };
 
 /**
  * Switch between views
  */
-window.switchView = (view) => {
+/**
+ * Switch between views
+ */
+window.switchView = async (view) => {
     state.currentView = view;
-    window.updateNavigation();
+    // updateNavigation is async now but we don't necessarily block UI for it, wait, badge might need it.
 
-    const wizard = document.getElementById('wizard-container');
-    const result = document.getElementById('result-container');
+    window.showLoading('Loading...');
 
-    switch (view) {
-        case 'generate':
-            wizard.style.display = 'block';
-            result.style.display = 'none';
-            window.renderStep();
-            break;
-        case 'review':
-            wizard.style.display = 'none';
-            result.style.display = 'block';
-            window.renderReviewDashboard();
-            break;
-        case 'history':
-            wizard.style.display = 'none';
-            result.style.display = 'block';
-            window.renderHistoryPage();
-            break;
-        case 'stats':
-            wizard.style.display = 'none';
-            result.style.display = 'block';
-            window.renderStatsPage();
-            break;
+    try {
+        await window.updateNavigation();
+
+        const wizard = document.getElementById('wizard-container');
+        const result = document.getElementById('result-container');
+
+        switch (view) {
+            case 'generate':
+                wizard.style.display = 'block';
+                result.style.display = 'none';
+                window.renderStep();
+                break;
+            case 'review':
+                wizard.style.display = 'none';
+                result.style.display = 'block';
+                if (window.renderReviewDashboard) await window.renderReviewDashboard();
+                break;
+            case 'history':
+                wizard.style.display = 'none';
+                result.style.display = 'block';
+                if (window.renderHistoryPage) await window.renderHistoryPage();
+                break;
+            case 'stats':
+                wizard.style.display = 'none';
+                result.style.display = 'block';
+                if (window.renderStatsPage) await window.renderStatsPage();
+                break;
+        }
+    } finally {
+        window.hideLoading();
     }
 };
 
 /**
  * Update navigation tabs to show active state
  */
-window.updateNavigation = () => {
+/**
+ * Update navigation tabs to show active state
+ */
+window.updateNavigation = async () => {
     const navTabs = document.querySelectorAll('.nav-tab');
     navTabs.forEach(tab => {
         if (tab.dataset.view === state.currentView) {
@@ -339,7 +372,7 @@ window.updateNavigation = () => {
     });
 
     // Update due badge
-    const dueNarratives = window.storage?.getNarrativesDueToday() || [];
+    const dueNarratives = (await window.storage?.getNarrativesDueToday()) || [];
     const badge = document.getElementById('due-badge');
     if (badge) {
         if (dueNarratives.length > 0) {

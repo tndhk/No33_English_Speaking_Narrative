@@ -6,14 +6,20 @@
 /**
  * Render review dashboard (main review entry point)
  */
-function renderReviewDashboard() {
+async function renderReviewDashboard() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
-  const dueToday = window.storage?.getNarrativesDueToday() || [];
-  const upcoming = window.storage?.getNarrativesUpcoming(7) || [];
-  const stats = window.storage?.getSRSStats() || {};
-  const srsStats = window.srs?.getReviewStatistics() || {};
+  const dueToday = (await window.storage?.getNarrativesDueToday()) || [];
+  const upcoming = (await window.storage?.getNarrativesUpcoming(7)) || [];
+  const stats = (await window.storage?.getSRSStats()) || {};
+
+  // SRS Stats needs narratives to calculate review statistics
+  // Or we can rely on what we have. window.srs.getReviewStatistics likely takes narratives or uses storage internally.
+  // Assuming window.srs.getReviewStatistics is sync but expects narratives logic, let's see srs.js later.
+  // For now, let's fetch all narratives to pass to srs helpers if needed or assuming they are stateless helpers.
+  const narratives = (await window.storage?.getAllNarratives()) || [];
+  const srsStats = window.srs?.getReviewStatistics(narratives) || {};
 
   let html = `
     <h2>📚 復習ダッシュボード</h2>
@@ -142,12 +148,12 @@ function renderReviewDashboard() {
 /**
  * Render detailed statistics screen
  */
-function renderStatsPage() {
+async function renderStatsPage() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
-  const narratives = window.storage?.getAllNarratives() || [];
-  const stats = window.storage?.getSRSStats() || {};
+  const narratives = (await window.storage?.getAllNarratives()) || [];
+  const stats = (await window.storage?.getSRSStats()) || {};
   const srsStats = window.srs?.getReviewStatistics(narratives) || {};
 
   // Calculate stats by category
@@ -263,11 +269,11 @@ function renderStatsPage() {
 /**
  * Render history/library view
  */
-function renderHistoryPage() {
+async function renderHistoryPage() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
-  const narratives = window.storage?.getAllNarratives() || [];
+  const narratives = (await window.storage?.getAllNarratives()) || [];
 
   let html = `
     <h2>📋 ナラティブ履歴</h2>
@@ -305,6 +311,7 @@ function renderHistoryPage() {
         'mastered': '#4ade80'
       }[n.srs?.status] || '#666';
 
+      // Using ID instead of index for operations
       html += `
         <div style="background: #0f172a; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid ${statusColor};">
           <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
@@ -321,8 +328,8 @@ function renderHistoryPage() {
             ${n.narrative_en.substring(0, 100)}${n.narrative_en.length > 100 ? '...' : ''}
           </div>
           <div style="display: flex; gap: 0.5rem;">
-            <button class="secondary" onclick="window.viewNarrativeDetails(${idx})" style="padding: 0.5rem 1rem; font-size: 0.85rem;">詳細</button>
-            <button class="secondary" onclick="window.deleteNarrative(${idx})" style="padding: 0.5rem 1rem; font-size: 0.85rem;">削除</button>
+            <button class="secondary" onclick="window.viewNarrativeDetails('${n.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">詳細</button>
+            <button class="secondary" onclick="window.deleteNarrative('${n.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">削除</button>
           </div>
         </div>
       `;
@@ -346,58 +353,62 @@ window.renderReviewDashboard = renderReviewDashboard;
 window.renderStatsPage = renderStatsPage;
 window.renderHistoryPage = renderHistoryPage;
 
-window.goToReviewDashboard = function() {
+window.goToReviewDashboard = async function () {
   window.state.currentView = 'review';
-  window.updateNavigation();
-  window.renderReviewDashboard();
+  await window.updateNavigation();
+  await window.renderReviewDashboard();
 };
 
-window.goToStats = function() {
+window.goToStats = async function () {
   window.state.currentView = 'stats';
-  window.updateNavigation();
-  window.renderStatsPage();
+  await window.updateNavigation();
+  await window.renderStatsPage();
 };
 
-window.goToHistory = function() {
+window.goToHistory = async function () {
   window.state.currentView = 'history';
-  window.updateNavigation();
-  window.renderHistoryPage();
+  await window.updateNavigation();
+  await window.renderHistoryPage();
 };
 
-window.goToGenerate = function() {
+window.goToGenerate = function () {
   window.state.currentView = 'generate';
   window.state.step = 0;
   window.updateNavigation();
   window.renderStep();
 };
 
-window.startReview = function() {
-  const success = window.initReviewSession({ order: 'oldest_first' });
-  if (!success) {
-    alert('復習するナラティブがありません');
-    return;
+window.startReview = async function () {
+  window.showLoading('Preparing review...');
+  try {
+    const success = await window.initReviewSession({ order: 'oldest_first' });
+    if (!success) {
+      alert('復習するナラティブがありません');
+      return;
+    }
+    window.renderReviewSession();
+  } finally {
+    window.hideLoading();
   }
-  window.renderReviewSession();
 };
 
-window.openExportUI = function() {
+window.openExportUI = async function () {
   window.state.currentView = 'export';
-  window.renderExportUI();
+  await window.renderExportUI();
 };
 
-window.filterHistory = function(query) {
-  // Placeholder - will be enhanced
+window.filterHistory = function (query) {
+  // Placeholder - will be enhanced to use searchNarratives(query)
   console.log('Filter by:', query);
 };
 
-window.filterByStatus = function(status) {
-  // Placeholder - will be enhanced
+window.filterByStatus = function (status) {
+  // Placeholder - will be enhanced to use filterNarratives({status})
   console.log('Filter by status:', status);
 };
 
-window.viewNarrativeDetails = function(idx) {
-  const narratives = window.storage?.getAllNarratives() || [];
-  const n = narratives[idx];
+window.viewNarrativeDetails = async function (id) {
+  const n = await window.storage?.getNarrativeById(id);
   if (!n) return;
 
   const details = `
@@ -427,13 +438,14 @@ ${n.recall_test.prompt_ja}
   alert('詳細をコピーしました！');
 };
 
-window.deleteNarrative = function(idx) {
+window.deleteNarrative = async function (id) {
   if (!confirm('このナラティブを削除しますか？')) return;
 
-  const narratives = window.storage?.getAllNarratives() || [];
-  const n = narratives[idx];
-  if (n) {
-    window.storage?.deleteNarrative(n.id);
-    window.renderHistoryPage();
+  window.showLoading('Deleting...');
+  try {
+    await window.storage?.deleteNarrative(id);
+    await window.renderHistoryPage();
+  } finally {
+    window.hideLoading();
   }
 };

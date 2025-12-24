@@ -84,14 +84,14 @@ function formatDate(date) {
  * Record a review and update narrative SRS data
  * @param {string} narrativeId - ID of narrative being reviewed
  * @param {number} quality - Quality rating (0-3)
- * @returns {Object} Updated narrative object
+ * @returns {Promise<Object>} Updated narrative object
  */
-function recordReview(narrativeId, quality) {
+async function recordReview(narrativeId, quality) {
   if (quality < 0 || quality > 3) {
     throw new Error('Quality must be between 0 and 3');
   }
 
-  const narrative = getNarrativeById(narrativeId);
+  const narrative = await getNarrativeById(narrativeId);
   if (!narrative) throw new Error('Narrative not found');
 
   const { nextIntervalIndex, nextReviewDate, status } = calculateNextReview(
@@ -113,10 +113,10 @@ function recordReview(narrativeId, quality) {
     ease_factor: narrative.srs.ease_factor // Preserved for future SM-2 enhancement
   };
 
-  const updated = updateNarrativeSRS(narrativeId, updatedSRS);
+  const updated = await updateNarrativeSRS(narrativeId, updatedSRS);
 
   // Update stats
-  updateSRSStats();
+  await updateSRSStats();
 
   return updated;
 }
@@ -126,8 +126,12 @@ function recordReview(narrativeId, quality) {
  * @param {Array} narratives - Array of narrative objects (optional, uses all if not provided)
  * @returns {Object} Statistics object
  */
-function getReviewStatistics(narratives = null) {
-  const allNarratives = narratives || getAllNarratives();
+function getReviewStatistics(narratives = []) {
+  // Assuming narratives are passed in. If not, this function needs to be async to fetch them.
+  // For compatibility with synchronous logic, we expect narratives to be passed.
+  // If not passed, we return empty stats (handling async fetch inside render loop is better).
+
+  const allNarratives = narratives;
 
   const stats = {
     total: allNarratives.length,
@@ -197,40 +201,40 @@ function getReviewStatistics(narratives = null) {
 }
 
 /**
- * Get narrative by ID (wrapper - requires storage.js)
+ * Get narrative by ID (Async wrapper)
  */
-function getNarrativeById(id) {
-  return window.storage?.getNarrativeById(id) || null;
+async function getNarrativeById(id) {
+  return await window.storage?.getNarrativeById(id) || null;
 }
 
 /**
- * Update narrative SRS (wrapper - requires storage.js)
+ * Update narrative SRS (Async wrapper)
  */
-function updateNarrativeSRS(id, srsData) {
-  return window.storage?.updateNarrativeSRS(id, srsData) || null;
+async function updateNarrativeSRS(id, srsData) {
+  return await window.storage?.updateNarrativeSRS(id, srsData) || null;
 }
 
 /**
- * Get all narratives (wrapper - requires storage.js)
+ * Get all narratives (Async wrapper)
  */
-function getAllNarratives() {
-  return window.storage?.getAllNarratives() || [];
+async function getAllNarratives() {
+  return await window.storage?.getAllNarratives() || [];
 }
 
 /**
- * Update SRS stats (wrapper - requires storage.js)
+ * Update SRS stats (Async wrapper)
  */
-function updateSRSStats() {
-  return window.storage?.updateSRSStats();
+async function updateSRSStats() {
+  return await window.storage?.updateSRSStats();
 }
 
 /**
  * Reset a narrative to "new" status (restarts SRS)
  * @param {string} narrativeId - ID of narrative
- * @returns {Object} Updated narrative
+ * @returns {Promise<Object>} Updated narrative
  */
-function resetNarrativeToNew(narrativeId) {
-  return updateNarrativeSRS(narrativeId, {
+async function resetNarrativeToNew(narrativeId) {
+  return await updateNarrativeSRS(narrativeId, {
     interval_index: 0,
     next_review_date: formatDate(new Date()),
     last_reviewed: null,
@@ -243,10 +247,10 @@ function resetNarrativeToNew(narrativeId) {
 /**
  * Suspend a narrative from review
  * @param {string} narrativeId - ID of narrative
- * @returns {Object} Updated narrative
+ * @returns {Promise<Object>} Updated narrative
  */
-function suspendNarrative(narrativeId) {
-  return updateNarrativeSRS(narrativeId, {
+async function suspendNarrative(narrativeId) {
+  return await updateNarrativeSRS(narrativeId, {
     status: 'suspended'
   });
 }
@@ -254,13 +258,13 @@ function suspendNarrative(narrativeId) {
 /**
  * Resume a suspended narrative
  * @param {string} narrativeId - ID of narrative
- * @returns {Object} Updated narrative
+ * @returns {Promise<Object>} Updated narrative
  */
-function resumeNarrative(narrativeId) {
-  const narrative = getNarrativeById(narrativeId);
+async function resumeNarrative(narrativeId) {
+  const narrative = await getNarrativeById(narrativeId);
   if (!narrative) throw new Error('Narrative not found');
 
-  return updateNarrativeSRS(narrativeId, {
+  return await updateNarrativeSRS(narrativeId, {
     status: narrative.srs.review_count === 0 ? 'new' : 'learning'
   });
 }
@@ -336,11 +340,10 @@ function isOverdue(nextReviewDate) {
 
 /**
  * Get review count by quality level
- * @param {string} narrativeId - ID of narrative
+ * @param {Object} narrative - Narrative object (MODIFIED to accept object, not ID)
  * @returns {Object} Count by quality
  */
-function getQualityBreakdown(narrativeId) {
-  const narrative = getNarrativeById(narrativeId);
+function getQualityBreakdown(narrative) {
   if (!narrative || !narrative.srs.quality_history) {
     return { forgot: 0, hard: 0, good: 0, easy: 0 };
   }
@@ -357,11 +360,10 @@ function getQualityBreakdown(narrativeId) {
 /**
  * Estimate mastery date for a narrative
  * Based on current interval index and quality trend
- * @param {string} narrativeId - ID of narrative
+ * @param {Object} narrative - Narrative object (MODIFIED to accept object, not ID)
  * @returns {string} Estimated mastery date (YYYY-MM-DD)
  */
-function estimateMasteryDate(narrativeId) {
-  const narrative = getNarrativeById(narrativeId);
+function estimateMasteryDate(narrative) {
   if (!narrative) return null;
 
   const { interval_index, quality_history } = narrative.srs;
@@ -371,6 +373,7 @@ function estimateMasteryDate(narrativeId) {
 
   // Estimate based on remaining intervals and average quality
   let estimatedDays = 0;
+  // ... (Calculation logic remains same)
   const avgQuality = quality_history.length > 0
     ? quality_history.reduce((a, b) => a + b, 0) / quality_history.length
     : REVIEW_QUALITY.GOOD;

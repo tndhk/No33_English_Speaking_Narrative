@@ -18,14 +18,14 @@ const reviewSession = {
 /**
  * Initialize a review session with due narratives
  * @param {Object} options - Session options {order, limit}
- * @returns {boolean} Success status
+ * @returns {Promise<boolean>} Success status
  */
-function initReviewSession(options = {}) {
+async function initReviewSession(options = {}) {
   try {
     const { order = 'oldest_first', limit = null } = options;
 
     // Get due narratives
-    const dueNarratives = window.storage?.getNarrativesDueToday() || [];
+    const dueNarratives = (await window.storage?.getNarrativesDueToday()) || [];
 
     if (dueNarratives.length === 0) {
       return false; // No narratives to review
@@ -103,15 +103,15 @@ function toggleAnswerVisibility() {
 /**
  * Record review rating for current narrative
  * @param {number} quality - Quality rating (0-3)
- * @returns {Object} Updated narrative
+ * @returns {Promise<Object>} Updated narrative
  */
-function recordCurrentReview(quality) {
+async function recordCurrentReview(quality) {
   try {
     const narrative = getCurrentNarrative();
     if (!narrative) throw new Error('No narrative in session');
 
     // Record review
-    const updated = window.srs?.recordReview(narrative.id, quality);
+    const updated = await window.srs?.recordReview(narrative.id, quality);
     if (!updated) throw new Error('Failed to record review');
 
     // Update session stats
@@ -190,10 +190,10 @@ function endReviewSession() {
 /**
  * Get narratives due in N days
  * @param {number} days - Days ahead to check
- * @returns {Array} Array of narratives
+ * @returns {Promise<Array>} Array of narratives
  */
-function getNarrativesUpcoming(days = 7) {
-  return window.storage?.getNarrativesUpcoming(days) || [];
+async function getNarrativesUpcoming(days = 7) {
+  return (await window.storage?.getNarrativesUpcoming(days)) || [];
 }
 
 /**
@@ -267,15 +267,15 @@ function renderReviewSession() {
         <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
           <div style="font-size: 1rem; line-height: 1.8; margin-bottom: 1.5rem;">
             ${narrative.narrative_en.split(/(?<=[.!?])\s+/).map(s =>
-              `<span style="cursor: pointer; border-bottom: 1px dotted var(--accent-color);" onclick="event.stopPropagation(); window.speak('${s.replace(/'/g, "\\'")}')">${s}</span> `
-            ).join('')}
+      `<span style="cursor: pointer; border-bottom: 1px dotted var(--accent-color);" onclick="event.stopPropagation(); window.speak('${s.replace(/'/g, "\\'")}')">${s}</span> `
+    ).join('')}
           </div>
 
           <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
             <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;"><strong>キーフレーズ:</strong></p>
             ${narrative.key_phrases.slice(0, 2).map(p =>
-              `<div style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--accent-color);">${p.phrase_en}</div>`
-            ).join('')}
+      `<div style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--accent-color);">${p.phrase_en}</div>`
+    ).join('')}
           </div>
         </div>
         <p style="font-size: 0.8rem; color: var(--text-tertiary); cursor: pointer;">クリックで問題に戻る</p>
@@ -321,12 +321,12 @@ function renderReviewSession() {
 /**
  * Render review session complete screen
  */
-function renderSessionComplete() {
+async function renderSessionComplete() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
   const summary = getSessionSummary();
-  const stats = window.storage?.getSRSStats() || {};
+  const stats = (await window.storage?.getSRSStats()) || {};
 
   let html = `
     <div style="text-align: center; padding: 2rem 0;">
@@ -389,35 +389,38 @@ function renderSessionComplete() {
  * Global functions for UI integration
  */
 
-window.rateReview = function(quality) {
+window.rateReview = async function (quality) {
+  window.showLoading('Updating...');
   try {
-    window.recordCurrentReview(quality);
+    await window.recordCurrentReview(quality);
 
     if (window.hasNextNarrative()) {
       window.moveToNextNarrative();
       window.renderReviewSession();
     } else {
-      window.renderSessionComplete();
+      await window.renderSessionComplete();
     }
   } catch (error) {
     console.error('Error rating review:', error);
     alert('エラーが発生しました: ' + error.message);
+  } finally {
+    window.hideLoading();
   }
 };
 
-window.toggleAnswer = function() {
+window.toggleAnswer = function () {
   const visible = window.toggleAnswerVisibility();
   window.renderReviewSession();
 };
 
-window.endReviewClick = function() {
+window.endReviewClick = function () {
   if (confirm('復習を終了しますか？')) {
     window.endReviewSession();
     window.goToReviewDashboard();
   }
 };
 
-window.showNarrativeDetails = function() {
+window.showNarrativeDetails = function () {
   const narrative = window.getCurrentNarrative();
   if (!narrative) return;
 

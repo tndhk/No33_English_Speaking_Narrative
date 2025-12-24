@@ -19,9 +19,9 @@ function downloadFile(content, filename, type = 'text/plain') {
 /**
  * Export narratives as JSON
  */
-function exportAsJSON() {
+async function exportAsJSON() {
   try {
-    const json = window.storage?.exportNarrativesJSON();
+    const json = await window.storage?.exportNarrativesJSON();
     if (!json) {
       alert('エクスポートに失敗しました');
       return;
@@ -38,9 +38,9 @@ function exportAsJSON() {
 /**
  * Export narratives as CSV for Google Sheets
  */
-function exportAsCSV() {
+async function exportAsCSV() {
   try {
-    const csv = window.storage?.exportNarrativesCSV();
+    const csv = await window.storage?.exportNarrativesCSV();
     if (!csv) {
       alert('エクスポートに失敗しました');
       return;
@@ -57,9 +57,9 @@ function exportAsCSV() {
 /**
  * Export narratives as Markdown for Notion
  */
-function exportAsMarkdown() {
+async function exportAsMarkdown() {
   try {
-    const narratives = window.storage?.getAllNarratives() || [];
+    const narratives = (await window.storage?.getAllNarratives()) || [];
     if (narratives.length === 0) {
       alert('エクスポートするナラティブがありません');
       return;
@@ -124,10 +124,11 @@ function importFromJSON(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const jsonString = e.target.result;
-        const imported = window.storage?.importNarrativesJSON(jsonString);
+        // await inside callback wrapper
+        const imported = await window.storage?.importNarrativesJSON(jsonString);
 
         if (imported && imported.length > 0) {
           resolve({
@@ -154,12 +155,12 @@ function importFromJSON(file) {
 /**
  * Render export options UI
  */
-function renderExportUI() {
+async function renderExportUI() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
-  const narratives = window.storage?.getAllNarratives() || [];
-  const stats = window.storage?.getStorageStats();
+  const narratives = (await window.storage?.getAllNarratives()) || [];
+  const stats = (await window.storage?.getStorageStats());
 
   let html = `
     <h2>📤 データをエクスポート</h2>
@@ -168,7 +169,7 @@ function renderExportUI() {
       <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary);">保存されているナラティブ数</p>
       <p style="font-size: 2rem; margin: 0; color: var(--accent-color);">${narratives.length}</p>
       <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--text-tertiary);">
-        保存容量: ${stats?.total_storage_kb} KB
+        保存容量: ${stats?.total_storage_kb || 0} KB
       </p>
     </div>
 
@@ -223,31 +224,35 @@ window.exportAsCSV = exportAsCSV;
 window.exportAsMarkdown = exportAsMarkdown;
 window.renderExportUI = renderExportUI;
 
-window.handleImportFile = function(event) {
+window.handleImportFile = async function (event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  importFromJSON(file)
-    .then(result => {
-      alert(result.message);
-      window.goToHistory();
-    })
-    .catch(error => {
-      alert('インポート失敗: ' + error.message);
-    });
+  window.showLoading('Importing...');
+  try {
+    const result = await importFromJSON(file);
+    alert(result.message);
+    window.goToHistory();
+  } catch (error) {
+    alert('インポート失敗: ' + error.message);
+  } finally {
+    window.hideLoading();
+  }
 };
 
-window.handleImportDrop = function(event) {
+window.handleImportDrop = async function (event) {
   event.preventDefault();
   const file = event.dataTransfer.files[0];
   if (!file) return;
 
-  importFromJSON(file)
-    .then(result => {
-      alert(result.message);
-      window.goToHistory();
-    })
-    .catch(error => {
-      alert('インポート失敗: ' + error.message);
-    });
+  window.showLoading('Importing...');
+  try {
+    const result = await importFromJSON(file);
+    alert(result.message);
+    window.goToHistory();
+  } catch (error) {
+    alert('インポート失敗: ' + error.message);
+  } finally {
+    window.hideLoading();
+  }
 };
