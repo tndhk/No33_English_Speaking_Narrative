@@ -16,6 +16,22 @@
             <p class="subtitle">Your experiences, perfectly translated.</p>
         </header>
 
+        <nav id="navigation-tabs" class="nav-tabs" style="display: none;">
+            <button class="nav-tab active" data-view="generate" onclick="window.switchView('generate')">
+                <span style="font-size: 1.2rem;">✍️</span> 作成
+            </button>
+            <button class="nav-tab" data-view="review" onclick="window.switchView('review')">
+                <span style="font-size: 1.2rem;">📚</span> 復習
+                <span id="due-badge" class="badge" style="display: none;"></span>
+            </button>
+            <button class="nav-tab" data-view="history" onclick="window.switchView('history')">
+                <span style="font-size: 1.2rem;">📋</span> 履歴
+            </button>
+            <button class="nav-tab" data-view="stats" onclick="window.switchView('stats')">
+                <span style="font-size: 1.2rem;">📊</span> 統計
+            </button>
+        </nav>
+
         <main id="main-container">
             <!-- Content will be injected by main.js -->
             <div id="wizard-container" class="card">
@@ -38,6 +54,11 @@
             <p>Crafting your narrative...</p>
         </div>
     </div>
-    <script type="module" src="./main.js"></script>
+    <script src="./storage.js"></script>
+    <script src="./srs.js"></script>
+    <script src="./review-session.js"></script>
+    <script src="./export.js"></script>
+    <script src="./stats.js"></script>
+    <script src="./main.js"></script>
 </body>
 </html>

@@ -155,8 +155,238 @@ button.secondary:hover {
     to { transform: rotate(360deg); }
 }
 
+/* Navigation Tabs */
+.nav-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+.nav-tab {
+    white-space: nowrap;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.nav-tab.active {
+    background: var(--accent-color);
+    color: #fff;
+    border-color: var(--accent-color);
+}
+
+.badge {
+    display: inline-block;
+    background: #ef4444;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+/* Review Session Styles */
+.review-quality {
+    padding: 1rem 0.5rem !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 2px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+    transition: all 0.2s ease;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.review-quality:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: translateY(-2px);
+}
+
+/* Flip Card Animation */
+@keyframes flip {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(180deg); }
+}
+
+/* Progress Bar */
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+/* Status Indicators */
+.status-new {
+    color: #60a5fa;
+}
+
+.status-learning {
+    color: #fbbf24;
+}
+
+.status-mastered {
+    color: #4ade80;
+}
+
+.status-suspended {
+    color: #a78bfa;
+}
+
+/* Narrative Cards */
+.narrative-card {
+    background: #0f172a;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.narrative-card:hover {
+    background: #1e293b;
+    border-color: var(--accent-color);
+}
+
+/* Text Truncation */
+.truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Modal/Overlay */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    backdrop-filter: blur(5px);
+}
+
+.modal {
+    background: var(--card-bg);
+    border-radius: 1rem;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive Grid */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1));
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin: 0.5rem 0;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Form Inputs */
+input[type="text"],
+input[type="file"],
+textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background: #0f172a;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="file"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+}
+
+input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+    accent-color: var(--accent-color);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.5);
+}
+
 @media (max-width: 480px) {
     body { padding: 1rem; }
     h1 { font-size: 2rem; }
     .card { padding: 1.5rem; }
+    .nav-tabs { gap: 0.25rem; }
+    .nav-tab { padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
 }
