@@ -9,7 +9,8 @@ const state = {
         rate: 1.0
     },
     narrative: null,
-    voices: []
+    voices: [],
+    currentView: 'generate' // 'generate' | 'review' | 'history' | 'stats' | 'export'
 };
 
 const categories = [
@@ -178,12 +179,14 @@ function renderResult() {
         <div id="narrative-sentences" class="narrative-box" style="background:#0f172a; padding:1.5rem; border-radius:1rem; margin-bottom:1.5rem; font-size:1.1rem; line-height:1.8;">
             ${data.narrative_en.split(/(?<=[.!?])\s+/).map((s, i) => `<span class="sentence" onclick="window.speak('${s.replace(/'/g, "\\'")}')" style="cursor:pointer; display:inline-block; margin-right:4px;">${s}</span>`).join('')}
         </div>
-        
-        <div class="actions" style="display:flex; gap:1rem; margin-bottom:2rem;">
-            <button class="primary" onclick="window.speak()">Play Full</button>
-            <button class="secondary" onclick="window.copy()">Copy</button>
-            <button class="secondary" onclick="window.download()">JSON</button>
+
+        <div class="actions" style="display:flex; gap:1rem; margin-bottom:2rem; flex-wrap:wrap;">
+            <button class="primary" onclick="window.speak()" style="flex:1;">Play Full</button>
+            <button class="secondary" onclick="window.copy()" style="flex:1;">Copy</button>
+            <button class="secondary" onclick="window.download()" style="flex:1;">JSON</button>
         </div>
+
+        <button class="primary" onclick="window.saveNarrativeForReview()" style="width:100%; margin-bottom:1.5rem;">💾 Save for Review</button>
 
         <h3>Key Phrases</h3>
         <ul style="list-style:none; padding:0; margin-bottom:2rem;">
@@ -201,8 +204,11 @@ function renderResult() {
         <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:0.5rem; margin-bottom:1.5rem;">
             ${data.recall_test.prompt_ja}
         </div>
-        
-        <button class="secondary" onclick="location.reload()">New Narrative</button>
+
+        <div style="display:flex; gap:1rem;">
+            <button class="secondary" onclick="window.newNarrative()" style="flex:1;">New</button>
+            <button class="secondary" onclick="window.goToReviewDashboard()" style="flex:1;">Review</button>
+        </div>
     `;
 }
 
@@ -252,4 +258,134 @@ window.download = () => {
     document.body.removeChild(a);
 };
 
+// ========== SRS Integration Functions ==========
+
+/**
+ * Save narrative to localStorage and schedule for review
+ */
+window.saveNarrativeForReview = () => {
+    try {
+        if (!state.narrative) {
+            alert('No narrative to save');
+            return;
+        }
+
+        const metadata = {
+            category: state.category,
+            answers: state.answers,
+            settings: state.settings
+        };
+
+        const saved = window.storage?.saveNarrative(state.narrative, metadata);
+
+        if (saved) {
+            alert('✅ Narrative saved! Ready for review.');
+            // Optionally navigate to review dashboard
+            setTimeout(() => window.goToReviewDashboard(), 500);
+        } else {
+            alert('Failed to save narrative');
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        alert('Save failed: ' + error.message);
+    }
+};
+
+/**
+ * Switch between views
+ */
+window.switchView = (view) => {
+    state.currentView = view;
+    window.updateNavigation();
+
+    const wizard = document.getElementById('wizard-container');
+    const result = document.getElementById('result-container');
+
+    switch (view) {
+        case 'generate':
+            wizard.style.display = 'block';
+            result.style.display = 'none';
+            window.renderStep();
+            break;
+        case 'review':
+            wizard.style.display = 'none';
+            result.style.display = 'block';
+            window.renderReviewDashboard();
+            break;
+        case 'history':
+            wizard.style.display = 'none';
+            result.style.display = 'block';
+            window.renderHistoryPage();
+            break;
+        case 'stats':
+            wizard.style.display = 'none';
+            result.style.display = 'block';
+            window.renderStatsPage();
+            break;
+    }
+};
+
+/**
+ * Update navigation tabs to show active state
+ */
+window.updateNavigation = () => {
+    const navTabs = document.querySelectorAll('.nav-tab');
+    navTabs.forEach(tab => {
+        if (tab.dataset.view === state.currentView) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+
+    // Update due badge
+    const dueNarratives = window.storage?.getNarrativesDueToday() || [];
+    const badge = document.getElementById('due-badge');
+    if (badge) {
+        if (dueNarratives.length > 0) {
+            badge.style.display = 'inline-block';
+            badge.textContent = dueNarratives.length;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+};
+
+/**
+ * Show navigation tabs
+ */
+window.showNavigation = () => {
+    const navTabs = document.getElementById('navigation-tabs');
+    if (navTabs) {
+        navTabs.style.display = 'flex';
+    }
+};
+
+/**
+ * Hide navigation tabs
+ */
+window.hideNavigation = () => {
+    const navTabs = document.getElementById('navigation-tabs');
+    if (navTabs) {
+        navTabs.style.display = 'none';
+    }
+};
+
+/**
+ * New narrative (reset form)
+ */
+window.newNarrative = () => {
+    state.step = 0;
+    state.category = null;
+    state.answers = [];
+    state.narrative = null;
+    state.currentView = 'generate';
+    window.updateNavigation();
+    window.renderStep();
+};
+
 init();
+
+// Show navigation tabs and update on initialization
+window.showNavigation();
+window.updateNavigation();
