@@ -6,3 +6,4 @@ pages_build_output_dir = "src"
 # API keys will be set via wrangler secret or environment variables locally
 # GEMINI_API_KEY = "..."
 # DEEPSEEK_API_KEY = "..."
+# GROK_API_KEY = "..."
