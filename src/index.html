@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My English Narrative AI</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>My English Narrative AI</h1>
+            <p class="subtitle">Your experiences, perfectly translated.</p>
+        </header>
+
+        <main id="main-container">
+            <!-- Content will be injected by main.js -->
+            <div id="wizard-container" class="card">
+                <div id="step-content">
+                    <!-- Steps injected here -->
+                </div>
+                <div id="step-actions">
+                    <button id="next-btn" class="primary">Next</button>
+                    <button id="prev-btn" class="secondary" style="display: none;">Back</button>
+                </div>
+            </div>
+
+            <div id="result-container" class="card" style="display: none;">
+                <!-- Result displayed here -->
+            </div>
+        </main>
+
+        <div id="loading-overlay" style="display: none;">
+            <div class="spinner"></div>
+            <p>Crafting your narrative...</p>
+        </div>
+    </div>
+    <script type="module" src="./main.js"></script>
+</body>
+</html>
