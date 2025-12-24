@@ -177,37 +177,64 @@ export async function onRequestPost(context) {
     const { category, answers, settings } = await request.json();
     console.log('Request received:', { category, answers, settings });
 
-    const systemPrompt = `You are an expert English writing coach for Japanese learners (TOEIC 400-600).
-Transform the user's experience into a natural, memorable English narrative using simple, high-frequency vocabulary.
+    const systemPromptTemplate = `# Role
+You are an expert English writing coach for Japanese learners (TOEIC 400-600).
+Your goal is to transform a user's personal experience or thoughts into a natural, memorable English narrative.
 
-CRITICAL: Output ONLY valid JSON matching this EXACT schema:
+# Output Format
+You MUST output in JSON format exactly following the schema below. No other text is allowed outside the JSON block.
+
+# JSON Schema
 {
-  "narrative_en": "The main English narrative. ${settings.length === 'Short' ? '3-4' : settings.length === 'Long' ? '10+' : '5-8'} sentences. Tone: ${settings.tone || 'Business'}.",
+  "narrative_en": "string (The main English narrative. Number of sentences follows the 'length' setting.)",
   "key_phrases": [
-    { "phrase_en": "key expression from narrative", "meaning_ja": "日本語の意味", "usage_hint_ja": "使い方のヒント" }
+    {
+      "phrase_en": "string",
+      "meaning_ja": "string",
+      "usage_hint_ja": "string (Brief tip)"
+    }
   ],
   "alternatives": [
-    { "original_en": "phrase from narrative", "alternative_en": "alternative expression", "nuance_ja": "ニュアンスの違い" }
+    {
+      "original_en": "string",
+      "alternative_en": "string",
+      "nuance_ja": "string (Brief explanation of the difference)"
+    }
   ],
   "recall_test": {
-    "prompt_ja": "ナラティブの要点を3点程度で日本語で記述",
-    "expected_points_en": ["key point 1", "key point 2"]
+    "prompt_ja": "string (3 key points in Japanese for reproduction)",
+    "expected_points_en": ["string", "string"]
   },
-  "pronunciation": { "word": "difficult word", "ipa": "/IPA/", "tip_ja": "発音のコツ" }
+  "pronunciation": {
+    "word": "string",
+    "ipa": "string",
+    "tip_ja": "string"
+  }
 }
 
-Requirements:
-- key_phrases: 3-5 items with ALL three fields (phrase_en, meaning_ja, usage_hint_ja)
-- alternatives: 1-2 items with ALL three fields
-- recall_test: REQUIRED with prompt_ja and expected_points_en array
-- NO Japanese in narrative_en
-- Category: ${category}
-- User context: ${answers.join(' ')}`;
+# Rules
+1. narrative_en: Use natural, modern English. Avoid overly academic terms unless 'formal' tone is selected.
+2. key_phrases: 3-5 items. Focus on practical expressions used in the narrative.
+3. alternatives: Max 2 items. Provide subtle nuance differences.
+4. recall_test: prompt_ja should NOT be a word-for-word translation, but rather the essence of what needs to be said.
+5. NO Japanese in narrative_en.
+6. Match the requested tone (Casual/Business/Formal) and length (Short: 3-4, Normal: 5-8, Long: 10+).
 
-    const resultText = await generateWithFallback(systemPrompt, env);
+# Context
+- Category: ${category}
+- Tone: ${settings.tone || 'Business'}
+- Length: ${settings.length || 'Normal'}
+- User Inputs:
+${answers.map((a, i) => `  ${i + 1}. ${a}`).join('\n')}`;
+
+    console.log('Using constructed system prompt');
+    const resultText = await generateWithFallback(systemPromptTemplate, env);
 
     return new Response(resultText, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      }
     });
 
   } catch (error) {
