@@ -12,6 +12,7 @@ window.state = {
     voices: [],
     currentView: 'generate' // 'generate' | 'review' | 'history' | 'stats' | 'export'
 };
+const state = window.state;
 
 const categories = [
     { id: 'today', label: '今日の出来事', description: '今日あった出来事や会話をナラティブにします。' },
@@ -542,9 +543,6 @@ window.saveNarrativeForReview = async () => {
     }
 };
 
-/**
- * Switch between views
- */
 /**
  * Switch between views
  */
