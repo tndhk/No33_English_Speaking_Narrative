@@ -16,7 +16,20 @@
             <p class="subtitle">Your experiences, perfectly translated.</p>
         </header>
 
-        <nav id="navigation-tabs" class="nav-tabs" style="display: none;">
+        <!-- Authentication UI -->
+        <div id="auth-ui-container"></div>
+
+        <!-- Authentication Required Message -->
+        <div id="auth-required" style="display: none;">
+            <div class="card">
+                <h2>ログインが必要です</h2>
+                <p>学習履歴と設定を管理するには、ログインしてください。</p>
+            </div>
+        </div>
+
+        <!-- Main App Content (shown when authenticated) -->
+        <div id="app-content" style="display: none;">
+        <nav id="navigation-tabs" class="nav-tabs">
             <button class="nav-tab active" data-view="generate" onclick="window.switchView('generate')">
                 <span style="font-size: 1.2rem;">✍️</span> 作成
             </button>
@@ -53,7 +66,10 @@
             <div class="spinner"></div>
             <p id="loading-text">Crafting your narrative...</p>
         </div>
+        </div><!-- End app-content -->
     </div>
+    <script type="module" src="./supabase.js"></script>
+    <script type="module" src="./auth.js"></script>
     <script src="./storage.js"></script>
     <script src="./srs.js"></script>
     <script src="./review-session.js"></script>
