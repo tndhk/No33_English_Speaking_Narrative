@@ -177,4 +177,153 @@ describe('SRS (Spaced Repetition System) Module', () => {
         expect(srs.isOverdue(yesterdayStr)).toBe(true);
     });
   });
+
+  describe('Status Management', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('should reset narrative to new', async () => {
+      window.storage.updateNarrativeSRS.mockResolvedValue(true);
+      await srs.resetNarrativeToNew('123');
+
+      expect(window.storage.updateNarrativeSRS).toHaveBeenCalledWith(
+        '123',
+        expect.objectContaining({
+          status: 'new',
+          interval_index: 0,
+          review_count: 0,
+          quality_history: []
+        })
+      );
+    });
+
+    it('should suspend narrative', async () => {
+      window.storage.updateNarrativeSRS.mockResolvedValue(true);
+      await srs.suspendNarrative('123');
+
+      expect(window.storage.updateNarrativeSRS).toHaveBeenCalledWith(
+        '123',
+        expect.objectContaining({
+          status: 'suspended'
+        })
+      );
+    });
+
+    it('should resume narrative to learning if review count > 0', async () => {
+      const mockNarrative = {
+        id: '123',
+        srs: { review_count: 5, status: 'suspended' }
+      };
+      window.storage.getNarrativeById.mockResolvedValue(mockNarrative);
+      window.storage.updateNarrativeSRS.mockResolvedValue(true);
+
+      await srs.resumeNarrative('123');
+
+      expect(window.storage.updateNarrativeSRS).toHaveBeenCalledWith(
+        '123',
+        expect.objectContaining({
+          status: 'learning'
+        })
+      );
+    });
+
+    it('should resume narrative to new if review count is 0', async () => {
+      const mockNarrative = {
+        id: '123',
+        srs: { review_count: 0, status: 'suspended' }
+      };
+      window.storage.getNarrativeById.mockResolvedValue(mockNarrative);
+      window.storage.updateNarrativeSRS.mockResolvedValue(true);
+
+      await srs.resumeNarrative('123');
+
+      expect(window.storage.updateNarrativeSRS).toHaveBeenCalledWith(
+        '123',
+        expect.objectContaining({
+          status: 'new'
+        })
+      );
+    });
+  });
+
+  describe('Ordering & Sorting', () => {
+    it('should sort by interval index then last reviewed date (Optimal Order)', () => {
+      const narratives = [
+        { id: '1', srs: { interval_index: 2, last_reviewed: '2023-01-02' } },
+        { id: '2', srs: { interval_index: 1, last_reviewed: '2023-01-01' } }, // Lower interval -> First
+        { id: '3', srs: { interval_index: 1, last_reviewed: '2023-01-03' } }, // Same interval, later date -> Later
+      ];
+
+      // Expected order: 2 (idx 1, old date), 3 (idx 1, new date), 1 (idx 2)
+      // Actually, wait. The logic is:
+      // return a.srs.interval_index - b.srs.interval_index;
+      // return new Date(a.last_reviewed) - new Date(b.last_reviewed);
+      // So 2 (idx 1, Jan 1), 3 (idx 1, Jan 3), 1 (idx 2)
+      
+      const sorted = srs.getOptimalReviewOrder(narratives);
+      expect(sorted[0].id).toBe('2');
+      expect(sorted[1].id).toBe('3');
+      expect(sorted[2].id).toBe('1');
+    });
+
+    it('should shuffle narratives (Random Order)', () => {
+      const narratives = [
+        { id: '1' }, { id: '2' }, { id: '3' }, { id: '4' }, { id: '5' }
+      ];
+      // Mock Math.random to be deterministic or just check that it returns same length and items
+      // For shuffling, it's hard to test randomness without seeding.
+      // We can just check it returns an array of same length and contains same items.
+      
+      const shuffled = srs.getRandomReviewOrder(narratives);
+      expect(shuffled).toHaveLength(5);
+      expect(shuffled.map(n => n.id).sort()).toEqual(['1', '2', '3', '4', '5']);
+      // Ideally check that it is not same order, but with small sample it might be.
+    });
+  });
+
+  describe('Estimations', () => {
+    it('should return null for null narrative', () => {
+      expect(srs.estimateMasteryDate(null)).toBeNull();
+    });
+
+    it('should return today if already mastered', () => {
+       const narrative = { srs: { interval_index: srs.SRS_INTERVALS.length - 1 } };
+       const date = srs.estimateMasteryDate(narrative);
+       const today = new Date().toISOString().split('T')[0];
+       expect(date).toBe(today);
+    });
+
+    it('should estimate future date for learning items', () => {
+      // Setup a narrative at index 0 (0 days), next is 1, 3, 7, 14, 30.
+      // If quality history is good (avg >= 2), it sums remaining intervals.
+      // Index 0. Intervals to go: 1, 2, 3, 4, 5 (indices).
+      // SRS_INTERVALS = [0, 1, 3, 7, 14, 30]
+      // current index 0. Loop i from 0 to length-2 (4).
+      // i=0: add SRS_INTERVALS[1] = 1
+      // i=1: add SRS_INTERVALS[2] = 3
+      // i=2: add SRS_INTERVALS[3] = 7
+      // i=3: add SRS_INTERVALS[4] = 14
+      // i=4: add SRS_INTERVALS[5] = 30
+      // Total = 1+3+7+14+30 = 55 days.
+      
+      const narrative = { 
+        srs: { 
+          interval_index: 0, 
+          quality_history: [2, 2, 2] 
+        } 
+      };
+      
+      const resultDateStr = srs.estimateMasteryDate(narrative);
+      const resultDate = new Date(resultDateStr);
+      const today = new Date();
+      
+      const diffTime = resultDate - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      // Allow +/- 1 day for timezone/execution time diffs
+      expect(diffDays).toBeGreaterThanOrEqual(54); 
+      expect(diffDays).toBeLessThanOrEqual(56);
+    });
+  });
 });
