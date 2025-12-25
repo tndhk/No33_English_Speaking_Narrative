@@ -10,6 +10,11 @@ async function renderReviewDashboard() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
+  // Trigger animation
+  container.classList.remove('view-enter');
+  void container.offsetWidth;
+  container.classList.add('view-enter');
+
   const dueToday = (await window.storage?.getNarrativesDueToday()) || [];
   const upcoming = (await window.storage?.getNarrativesUpcoming(7)) || [];
   const stats = (await window.storage?.getSRSStats()) || {};
@@ -152,6 +157,11 @@ async function renderStatsPage() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
+  // Trigger animation
+  container.classList.remove('view-enter');
+  void container.offsetWidth;
+  container.classList.add('view-enter');
+
   const narratives = (await window.storage?.getAllNarratives()) || [];
   const stats = (await window.storage?.getSRSStats()) || {};
   const srsStats = window.srs?.getReviewStatistics(narratives) || {};
@@ -273,23 +283,51 @@ async function renderHistoryPage() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
+  // Trigger animation
+  container.classList.remove('view-enter');
+  void container.offsetWidth;
+  container.classList.add('view-enter');
+
+  // Reset filters when rendering the page
+  window.historyFilters = {
+    searchQuery: '',
+    status: 'all',
+    category: 'all'
+  };
+
   const narratives = (await window.storage?.getAllNarratives()) || [];
 
   let html = `
     <h2>📋 ナラティブ履歴</h2>
 
     <div style="margin-bottom: 1.5rem;">
-      <input type="text" id="search-query" placeholder="検索..."
+      <input type="text" id="search-query" placeholder="検索（英文、日本語、カテゴリ）..."
              onchange="window.filterHistory(this.value)"
              onkeyup="window.filterHistory(this.value)"
              style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: #0f172a; color: #fff;">
     </div>
 
-    <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-      <button class="secondary" onclick="window.filterByStatus('all')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">すべて</button>
-      <button class="secondary" onclick="window.filterByStatus('new')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">新規</button>
-      <button class="secondary" onclick="window.filterByStatus('learning')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">学習中</button>
-      <button class="secondary" onclick="window.filterByStatus('mastered')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">修得済</button>
+    <div style="margin-bottom: 1rem;">
+      <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">ステータス:</div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button class="secondary" data-filter-type="status" data-filter-value="all" onclick="window.filterByStatus('all')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--accent-color); color: white;">すべて</button>
+        <button class="secondary" data-filter-type="status" data-filter-value="new" onclick="window.filterByStatus('new')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">新規</button>
+        <button class="secondary" data-filter-type="status" data-filter-value="learning" onclick="window.filterByStatus('learning')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">学習中</button>
+        <button class="secondary" data-filter-type="status" data-filter-value="mastered" onclick="window.filterByStatus('mastered')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">修得済</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">カテゴリ:</div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button class="secondary" data-filter-type="category" data-filter-value="all" onclick="window.filterByCategory('all')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--accent-color); color: white;">すべて</button>
+        <button class="secondary" data-filter-type="category" data-filter-value="today" onclick="window.filterByCategory('today')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">今日の出来事</button>
+        <button class="secondary" data-filter-type="category" data-filter-value="thoughts" onclick="window.filterByCategory('thoughts')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">考え・気持ち</button>
+        <button class="secondary" data-filter-type="category" data-filter-value="omakase" onclick="window.filterByCategory('omakase')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">おまかせ</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
       <button class="secondary" onclick="window.openExportUI()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">📤 エクスポート</button>
     </div>
   `;
@@ -397,14 +435,140 @@ window.openExportUI = async function () {
   await window.renderExportUI();
 };
 
-window.filterHistory = function (query) {
-  // Placeholder - will be enhanced to use searchNarratives(query)
-  console.log('Filter by:', query);
+// Filter state to maintain current filters
+window.historyFilters = {
+  searchQuery: '',
+  status: 'all',
+  category: 'all'
 };
 
-window.filterByStatus = function (status) {
-  // Placeholder - will be enhanced to use filterNarratives({status})
-  console.log('Filter by status:', status);
+/**
+ * Render filtered history list
+ */
+async function renderFilteredHistory(narratives) {
+  const container = document.getElementById('history-list');
+  if (!container) return;
+
+  if (narratives.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
+        <p style="font-size: 1.2rem;">📚 該当するナラティブが見つかりません</p>
+        <p>検索条件を変更してみてください</p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+  narratives.forEach((n) => {
+    const statusColor = {
+      'new': '#60a5fa',
+      'learning': '#fbbf24',
+      'mastered': '#4ade80'
+    }[n.srs?.status] || '#666';
+
+    html += `
+      <div style="background: #0f172a; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid ${statusColor};">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+          <div>
+            <div style="font-weight: 600; margin-bottom: 0.25rem;">${n.category?.toUpperCase()}</div>
+            <div style="font-size: 0.9rem; color: var(--text-secondary);">${n.created_at?.split('T')[0]}</div>
+          </div>
+          <div style="text-align: right; font-size: 0.85rem;">
+            <div style="color: ${statusColor}; font-weight: 600; margin-bottom: 0.25rem;">${n.srs?.status}</div>
+            <div style="color: var(--text-secondary);">復習: ${n.srs?.review_count || 0}回</div>
+          </div>
+        </div>
+        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.5;">
+          ${n.narrative_en.substring(0, 100)}${n.narrative_en.length > 100 ? '...' : ''}
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="secondary" onclick="window.viewNarrativeDetails('${n.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">詳細</button>
+          <button class="secondary" onclick="window.deleteNarrative('${n.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">削除</button>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+/**
+ * Apply all filters and re-render history list
+ */
+async function applyHistoryFilters() {
+  const filters = {};
+
+  if (window.historyFilters.searchQuery) {
+    filters.searchQuery = window.historyFilters.searchQuery;
+  }
+
+  if (window.historyFilters.status && window.historyFilters.status !== 'all') {
+    filters.status = window.historyFilters.status;
+  }
+
+  if (window.historyFilters.category && window.historyFilters.category !== 'all') {
+    filters.category = window.historyFilters.category;
+  }
+
+  const narratives = await window.storage?.filterNarratives(filters) || [];
+  await renderFilteredHistory(narratives);
+
+  // Update button states
+  updateFilterButtonStates();
+}
+
+/**
+ * Update visual state of filter buttons
+ */
+function updateFilterButtonStates() {
+  // Update status buttons
+  document.querySelectorAll('[data-filter-type="status"]').forEach(btn => {
+    const status = btn.getAttribute('data-filter-value');
+    if (status === window.historyFilters.status) {
+      btn.style.background = 'var(--accent-color)';
+      btn.style.color = 'white';
+    } else {
+      btn.style.background = '';
+      btn.style.color = '';
+    }
+  });
+
+  // Update category buttons
+  document.querySelectorAll('[data-filter-type="category"]').forEach(btn => {
+    const category = btn.getAttribute('data-filter-value');
+    if (category === window.historyFilters.category) {
+      btn.style.background = 'var(--accent-color)';
+      btn.style.color = 'white';
+    } else {
+      btn.style.background = '';
+      btn.style.color = '';
+    }
+  });
+}
+
+/**
+ * Filter history by search query
+ */
+window.filterHistory = async function (query) {
+  window.historyFilters.searchQuery = query;
+  await applyHistoryFilters();
+};
+
+/**
+ * Filter history by status
+ */
+window.filterByStatus = async function (status) {
+  window.historyFilters.status = status;
+  await applyHistoryFilters();
+};
+
+/**
+ * Filter history by category
+ */
+window.filterByCategory = async function (category) {
+  window.historyFilters.category = category;
+  await applyHistoryFilters();
 };
 
 window.viewNarrativeDetails = async function (id) {

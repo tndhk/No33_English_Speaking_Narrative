@@ -5,14 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:full": "npx wrangler pages dev src --binding GEMINI_API_KEY=AIzaSyC_E33eQ2CsYT4mhSZlRrts126z7Utjeig --binding DEEPSEEK_API_KEY=sk-56b1af3dd6b243a29d57d5b432622d48",
+    "dev:full": "npx wrangler pages dev src",
+    "dev:backend": "wrangler pages dev dist --compatibility-flags nodejs_compat",
+    "dev:all": "npm run build && npm run dev:backend",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run --root ."
   },
   "devDependencies": {
-    "vite": "^6.0.0"
+    "happy-dom": "^20.0.11",
+    "vite": "^6.0.0",
+    "vitest": "^4.0.16"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.89.0"
+    "@supabase/supabase-js": "^2.89.0",
+    "ajv": "^8.14.0"
   }
 }

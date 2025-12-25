@@ -18,6 +18,7 @@
 
 ### データ管理
 - **Database**: Supabase を使用したデータ永続化
+- **User Authentication**: Supabase Auth を使用したユーザー認証と個別データ管理
 - **Export/Import**: JSON, CSV, Markdown 形式でのデータエクスポート・インポート
 
 ## 技術スタック
@@ -90,6 +91,55 @@ npx supabase stop
 npx supabase db reset
 ```
 
+### ユーザー認証の設定
+
+本アプリケーションは Supabase Auth を使用してユーザー認証を実装しています。
+
+#### ローカル開発環境
+
+ローカル環境では、Supabase のローカルインスタンスで自動的に認証機能が有効になります。
+
+1. アプリケーションを起動すると、ログイン/新規登録画面が表示されます
+2. 「新規登録」タブから、メールアドレスとパスワードを入力して登録してください
+3. ローカル開発では確認メールなしで即座にログインできます
+
+#### 本番環境（Supabase Cloud）
+
+本番環境にデプロイする場合は、以下の手順で Supabase Auth を設定してください。
+
+1. **Supabase プロジェクトの作成**
+   - [Supabase](https://supabase.com) でプロジェクトを作成
+   - プロジェクトの設定から `API URL` と `anon key` を取得
+
+2. **メール認証の設定**
+   - Supabase ダッシュボード → Authentication → Settings
+   - Email provider を設定（デフォルトは Supabase 提供のメールサービス）
+   - 必要に応じて、カスタムメールテンプレートを設定
+
+3. **環境変数の設定**
+   ```text
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+   ```
+
+4. **マイグレーションの適用**
+   ```bash
+   # Supabase プロジェクトにリンク
+   npx supabase link --project-ref your-project-ref
+
+   # マイグレーションを適用
+   npx supabase db push
+   ```
+
+#### Row Level Security (RLS) について
+
+データベースは Row Level Security (RLS) により、ユーザーごとにデータが分離されています。
+
+- **narratives テーブル**: 各ユーザーは自分が作成したナラティブのみを閲覧・編集できます
+- **user_stats テーブル**: 各ユーザーは自分の統計情報のみを閲覧・編集できます
+
+RLS ポリシーは `/supabase/migrations/` 内のマイグレーションファイルで定義されています。
+
 ## プロジェクト構造
 
 ```
@@ -97,6 +147,7 @@ npx supabase db reset
 ├── src/
 │   ├── index.html           # Frontend Entry
 │   ├── main.js              # Core Logic
+│   ├── auth.js              # Authentication (Supabase Auth)
 │   ├── storage.js           # Supabase Integration
 │   ├── supabase.js          # Supabase Client
 │   ├── srs.js               # SRS Logic
@@ -108,18 +159,38 @@ npx supabase db reset
 ├── supabase/
 │   ├── config.toml          # Supabase Configuration
 │   └── migrations/          # Database Migrations
+│       ├── 20251224115834_init_schema.sql              # Initial schema
+│       └── 20251225000000_add_user_authentication.sql  # User authentication
 ├── prompts/                 # System Prompts for LLM
 └── spec.md                  # Requirements Spec
 ```
 
 ## 開発の進め方
 
-### ローカル開発フロー
+### ローカル開発フロー（推奨）
 
-1. `npx supabase start` で Supabase を起動
-2. `npm run dev` で開発サーバーを起動
-3. ブラウザでアプリを開いて開発
-4. コードの変更は自動でリロードされます
+このプロジェクトは Vite 開発サーバーと Wrangler Pages Dev サーバーを連携させるプロキシ設定を使用しています。
+
+**フロントエンド開発：**
+```bash
+# 別のターミナルウィンドウで実行
+npm run dev
+```
+- Vite 開発サーバーが `http://localhost:5173` で起動
+- `/api` への API リクエストは自動的にバックエンド（localhost:8787）にプロキシされます
+- コードの変更は自動でリロードされます
+
+**バックエンド開発（オプション）：**
+```bash
+# ローカルでバックエンドをテストする場合は別のターミナルで実行
+# （フロントエンドのプロキシが自動的にリクエストをルーティングします）
+```
+
+**フル機能テスト（本番環境に近い環境）：**
+```bash
+npm run build      # フロントエンドをビルド
+npm run dev:backend # Wrangler Pages Dev でバックエンド + フロントエンドを起動
+```
 
 ### データベースのマイグレーション
 
@@ -135,10 +206,11 @@ npx supabase db reset
 
 ## 注意事項
 
-- 本プロジェクトは個人学習用のMVP版です
+- 本プロジェクトは個人学習用のツールです
 - ローカル環境での実行を前提としています
-- ユーザー認証機能は未実装です（RLS ポリシーは public read/write）
-- 本番環境へのデプロイ時は、適切なセキュリティ設定が必要です
+- **ユーザー認証機能が実装されています**: Supabase Auth を使用
+- **データ分離**: RLS (Row Level Security) により、各ユーザーのデータが安全に分離されます
+- 本番環境へのデプロイ時は、Supabase のメール認証設定を適切に行ってください
 
 ## ライセンス
 

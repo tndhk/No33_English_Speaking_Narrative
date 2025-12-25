@@ -8,7 +8,13 @@ import { supabase } from './supabase.js';
 // Make storage available globally via window.storage namespace
 window.storage = window.storage || {};
 
-const USER_ID_PLACEHOLDER = 'guest-user'; // For MVP without auth
+/**
+ * Get current authenticated user ID
+ * @returns {string|null} User ID or null if not authenticated
+ */
+function getUserId() {
+  return window.auth?.getUserId() || null;
+}
 
 /**
  * Initialize default SRS metadata for a new narrative
@@ -85,7 +91,13 @@ async function getAllNarratives() {
  */
 async function saveNarrative(narrative, metadata = {}) {
   try {
+    const userId = getUserId();
+    if (!userId) {
+      throw new Error('User must be authenticated to save narratives');
+    }
+
     const newNarrative = {
+      user_id: userId,
       narrative_en: narrative.narrative_en,
       key_phrases: narrative.key_phrases,
       alternatives: narrative.alternatives,
@@ -323,14 +335,26 @@ async function saveSRSSettings(settings) {
  */
 async function getSRSStats() {
   try {
+    const userId = getUserId();
+    if (!userId) {
+      // Return default stats if not authenticated
+      return {
+        total_reviews: 0,
+        current_streak: 0,
+        longest_streak: 0,
+        last_review_date: null,
+        reviews_by_date: {}
+      };
+    }
+
     const { data, error } = await supabase
       .from('user_stats')
       .select('*')
-      .eq('id', 'global')
+      .eq('user_id', userId)
       .single();
 
     if (error) {
-      // If not found, return default
+      // If not found, return default (stats will be created by trigger on first login)
       if (error.code === 'PGRST116') {
         return {
           total_reviews: 0,
@@ -388,6 +412,12 @@ async function updateSRSStats(reviewDate = new Date()) {
 
     const newLongestStreak = Math.max(stats.longest_streak || 0, currentStreak);
 
+    const userId = getUserId();
+    if (!userId) {
+      console.warn('Cannot update stats: user not authenticated');
+      return stats;
+    }
+
     const updates = {
       total_reviews: newTotalReviews,
       current_streak: currentStreak,
@@ -400,10 +430,10 @@ async function updateSRSStats(reviewDate = new Date()) {
     const { error } = await supabase
       .from('user_stats')
       .update(updates)
-      .eq('id', 'global');
+      .eq('user_id', userId);
 
     if (error) {
-      // If update fails, maybe row doesn't exist yet (though we insert on init)
+      // If update fails, maybe row doesn't exist yet (though it should be created by trigger)
       console.error('Failed to update stats', error);
     }
 
@@ -419,6 +449,12 @@ async function updateSRSStats(reviewDate = new Date()) {
  */
 async function resetSRSStats() {
   try {
+    const userId = getUserId();
+    if (!userId) {
+      console.warn('Cannot reset stats: user not authenticated');
+      return;
+    }
+
     const { error } = await supabase
       .from('user_stats')
       .update({
@@ -428,7 +464,11 @@ async function resetSRSStats() {
         last_review_date: null,
         reviews_by_date: {}
       })
-      .eq('id', 'global');
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error resetting SRS stats:', error);
+    }
   } catch (error) {
     console.error('Error resetting SRS stats:', error);
   }

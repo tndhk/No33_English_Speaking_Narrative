@@ -19,44 +19,60 @@
             <p class="subtitle">Your experiences, perfectly translated.</p>
         </header>
 
-        <nav id="navigation-tabs" class="nav-tabs" style="display: none;">
-            <button class="nav-tab active" data-view="generate" onclick="window.switchView('generate')">
-                <span style="font-size: 1.2rem;">✍️</span> 作成
-            </button>
-            <button class="nav-tab" data-view="review" onclick="window.switchView('review')">
-                <span style="font-size: 1.2rem;">📚</span> 復習
-                <span id="due-badge" class="badge" style="display: none;"></span>
-            </button>
-            <button class="nav-tab" data-view="history" onclick="window.switchView('history')">
-                <span style="font-size: 1.2rem;">📋</span> 履歴
-            </button>
-            <button class="nav-tab" data-view="stats" onclick="window.switchView('stats')">
-                <span style="font-size: 1.2rem;">📊</span> 統計
-            </button>
-        </nav>
+        <!-- Authentication UI -->
+        <div id="auth-ui-container"></div>
 
-        <main id="main-container">
-            <!-- Content will be injected by main.js -->
-            <div id="wizard-container" class="card">
-                <div id="step-content">
-                    <!-- Steps injected here -->
-                </div>
-                <div id="step-actions">
-                    <button id="next-btn" class="primary">Next</button>
-                    <button id="prev-btn" class="secondary" style="display: none;">Back</button>
-                </div>
+        <!-- Authentication Required Message -->
+        <div id="auth-required" style="display: none;">
+            <div class="card">
+                <h2>ログインが必要です</h2>
+                <p>学習履歴と設定を管理するには、ログインしてください。</p>
             </div>
-
-            <div id="result-container" class="card" style="display: none;">
-                <!-- Result displayed here -->
-            </div>
-        </main>
-
-        <div id="loading-overlay" style="display: none;">
-            <div class="spinner"></div>
-            <p id="loading-text">Crafting your narrative...</p>
         </div>
+
+        <!-- Main App Content (shown when authenticated) -->
+        <div id="app-content" style="display: none;">
+            <nav id="navigation-tabs" class="nav-tabs">
+                <button class="nav-tab active" data-view="generate" onclick="window.switchView('generate')">
+                    <span style="font-size: 1.2rem;">✍️</span> 作成
+                </button>
+                <button class="nav-tab" data-view="review" onclick="window.switchView('review')">
+                    <span style="font-size: 1.2rem;">📚</span> 復習
+                    <span id="due-badge" class="badge" style="display: none;"></span>
+                </button>
+                <button class="nav-tab" data-view="history" onclick="window.switchView('history')">
+                    <span style="font-size: 1.2rem;">📋</span> 履歴
+                </button>
+                <button class="nav-tab" data-view="stats" onclick="window.switchView('stats')">
+                    <span style="font-size: 1.2rem;">📊</span> 統計
+                </button>
+            </nav>
+
+            <main id="main-container">
+                <!-- Content will be injected by main.js -->
+                <div id="wizard-container" class="card">
+                    <div id="step-content">
+                        <!-- Steps injected here -->
+                    </div>
+                    <div id="step-actions">
+                        <button id="next-btn" class="primary">Next</button>
+                        <button id="prev-btn" class="secondary" style="display: none;">Back</button>
+                    </div>
+                </div>
+
+                <div id="result-container" class="card" style="display: none;">
+                    <!-- Result displayed here -->
+                </div>
+            </main>
+
+            <div id="loading-overlay" style="display: none;">
+                <div class="spinner"></div>
+                <p id="loading-text">Crafting your narrative...</p>
+            </div>
+        </div><!-- End app-content -->
     </div>
+    <script type="module" src="./supabase.js"></script>
+    <script type="module" src="./auth.js"></script>
     <script type="module" src="./storage.js"></script>
     <script type="module" src="./srs.js"></script>
     <script type="module" src="./review-session.js"></script>

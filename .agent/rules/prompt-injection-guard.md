@@ -1,9 +1,5 @@
 ---
-trigger: always_on
----
-
----
-trigger: always_on
+alwaysApply: true
 ---
 
 # 外部コンテキストインジェクション防御

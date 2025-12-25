@@ -1,5 +1,5 @@
 ---
-trigger: always_on
+alwaysApply: true
 ---
 
 ## Test strategy rules
@@ -10,7 +10,7 @@ These rules define the test process that **must** be followed whenever you imple
 
 ## 1. Test perspective table (equivalence partitioning / boundary values)
 
-1. Before starting any test work, you **must** first present a "test perspectives table" in Markdown table format.
+1. Before starting any test work, you **must** first present a “test perspectives table” in Markdown table format.
 2. The table must include at least the following columns: `Case ID`, `Input / Precondition`, `Perspective (Equivalence / Boundary)`, `Expected Result`, `Notes`.
 3. Rows must comprehensively cover normal, abnormal, and boundary cases. For boundary values, you must include `0 / minimum / maximum / ±1 / empty / NULL` at a minimum.
    Among the boundary candidates (0 / minimum / maximum / ±1 / empty / NULL), you may omit those that are not meaningful for the given specification, as long as you record in `Notes` why they are out of scope.
