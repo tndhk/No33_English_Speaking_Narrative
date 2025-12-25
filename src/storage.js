@@ -71,7 +71,7 @@ function transformToDB(appObj) {
 async function getAllNarratives() {
   try {
     const { data, error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -113,7 +113,7 @@ async function saveNarrative(narrative, metadata = {}) {
     const dbRow = transformToDB(newNarrative);
 
     const { data, error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .insert(dbRow)
       .select()
       .single();
@@ -137,7 +137,7 @@ async function saveNarrative(narrative, metadata = {}) {
 async function getNarrativeById(id) {
   try {
     const { data, error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .select('*')
       .eq('id', id)
       .single();
@@ -168,7 +168,7 @@ async function updateNarrativeSRS(id, srsData) {
     const newSrs = { ...current.srs, ...srsData };
 
     const { data, error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .update({ srs_data: newSrs })
       .eq('id', id)
       .select()
@@ -190,7 +190,7 @@ async function updateNarrativeSRS(id, srsData) {
 async function deleteNarrative(id) {
   try {
     const { error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .delete()
       .eq('id', id);
 
@@ -348,7 +348,7 @@ async function getSRSStats() {
     }
 
     const { data, error } = await supabase
-      .from('user_stats')
+      .from('en_journal_stats')
       .select('*')
       .eq('user_id', userId)
       .maybeSingle();
@@ -429,7 +429,7 @@ async function updateSRSStats(reviewDate = new Date()) {
     };
 
     const { error } = await supabase
-      .from('user_stats')
+      .from('en_journal_stats')
       .update(updates)
       .eq('user_id', userId);
 
@@ -457,7 +457,7 @@ async function resetSRSStats() {
     }
 
     const { error } = await supabase
-      .from('user_stats')
+      .from('en_journal_stats')
       .update({
         total_reviews: 0,
         current_streak: 0,
@@ -548,7 +548,7 @@ async function importNarrativesJSON(jsonString) {
     });
 
     const { data, error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .insert(dbRows)
       .select();
 
@@ -566,7 +566,7 @@ async function importNarrativesJSON(jsonString) {
  */
 async function clearAllData() {
   try {
-    await supabase.from('narratives').delete().neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+    await supabase.from('en_journal_narratives').delete().neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
     await resetSRSStats();
   } catch (error) {
     console.error('Error clearing data:', error);
