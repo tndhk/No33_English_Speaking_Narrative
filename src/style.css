@@ -60,6 +60,7 @@ h1 {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -183,7 +184,9 @@ button.secondary:hover {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Navigation Tabs */
@@ -255,8 +258,13 @@ button.secondary:hover {
 
 /* Flip Card Animation */
 @keyframes flip {
-    0% { transform: rotateY(0deg); }
-    100% { transform: rotateY(180deg); }
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    100% {
+        transform: rotateY(180deg);
+    }
 }
 
 /* Progress Bar */
@@ -674,12 +682,147 @@ input[type="password"]:focus {
 }
 
 @media (max-width: 480px) {
-    body { padding: 1rem; }
-    h1 { font-size: 2rem; }
-    .card { padding: 1.5rem; }
-    .nav-tabs { gap: 0.25rem; }
-    .nav-tab { padding: 0.5rem 0.75rem; font-size: 0.85rem; }
-    .stat-grid { grid-template-columns: repeat(2, 1fr); }
-    .auth-form { padding: 1.5rem; }
-    .user-info { flex-direction: column; gap: 0.5rem; }
+    body {
+        padding: 1rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
+
+    .nav-tabs {
+        gap: 0.25rem;
+    }
+
+    .nav-tab {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .auth-form {
+        padding: 1.5rem;
+    }
+
+    .user-info {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    /* Mobile Calendar Optimizations */
+    .calendar-grid {
+        gap: 0.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .calendar-day {
+        border-radius: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .calendar-header {
+        font-size: 0.85rem;
+        padding: 0.25rem 0;
+    }
+
+    .entry-dot {
+        width: 4px;
+        height: 4px;
+        margin-bottom: 2px;
+    }
+
+    .editable-narrative {
+        font-size: 1rem;
+        /* Prevent zoom on input for iOS */
+        padding: 0.75rem;
+    }
+}
+
+/* Calendar Styles */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.calendar-header {
+    text-align: center;
+    font-weight: bold;
+    color: var(--text-secondary);
+    padding: 0.5rem 0;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    background: #0f172a;
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.calendar-day:hover {
+    background: #1e293b;
+}
+
+.calendar-day.empty {
+    background: transparent;
+    cursor: default;
+}
+
+.calendar-day.has-entry {
+    border-color: var(--accent-color);
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.calendar-day.selected {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.entry-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    margin-bottom: 4px;
+}
+
+.calendar-day.selected .entry-dot {
+    background: white;
+}
+
+.editable-narrative {
+    width: 100%;
+    min-height: 200px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    resize: vertical;
+    transition: all 0.2s ease;
+}
+
+.editable-narrative:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.05);
 }

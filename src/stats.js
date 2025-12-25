@@ -279,6 +279,16 @@ async function renderStatsPage() {
 /**
  * Render history/library view
  */
+// Calendar State
+window.calendarState = {
+  currentYear: new Date().getFullYear(),
+  currentMonth: new Date().getMonth(), // 0-indexed
+  selectedDate: null
+};
+
+/**
+ * Render history/library view (Calendar Mode)
+ */
 async function renderHistoryPage() {
   const container = document.getElementById('result-container');
   if (!container) return;
@@ -288,102 +298,158 @@ async function renderHistoryPage() {
   void container.offsetWidth;
   container.classList.add('view-enter');
 
-  // Reset filters when rendering the page
-  window.historyFilters = {
-    searchQuery: '',
-    status: 'all',
-    category: 'all'
-  };
-
+  // Fetch all narratives
   const narratives = (await window.storage?.getAllNarratives()) || [];
+  window.allNarratives = narratives; // Cache for calendar rendering
 
   let html = `
-    <h2>📋 ナラティブ履歴</h2>
-
-    <div style="margin-bottom: 1.5rem;">
-      <input type="text" id="search-query" placeholder="検索（英文、日本語、カテゴリ）..."
-             onchange="window.filterHistory(this.value)"
-             onkeyup="window.filterHistory(this.value)"
-             style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: #0f172a; color: #fff;">
-    </div>
-
-    <div style="margin-bottom: 1rem;">
-      <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">ステータス:</div>
-      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        <button class="secondary" data-filter-type="status" data-filter-value="all" onclick="window.filterByStatus('all')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--accent-color); color: white;">すべて</button>
-        <button class="secondary" data-filter-type="status" data-filter-value="new" onclick="window.filterByStatus('new')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">新規</button>
-        <button class="secondary" data-filter-type="status" data-filter-value="learning" onclick="window.filterByStatus('learning')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">学習中</button>
-        <button class="secondary" data-filter-type="status" data-filter-value="mastered" onclick="window.filterByStatus('mastered')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">修得済</button>
-      </div>
-    </div>
-
-    <div style="margin-bottom: 1.5rem;">
-      <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">カテゴリ:</div>
-      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        <button class="secondary" data-filter-type="category" data-filter-value="all" onclick="window.filterByCategory('all')" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: var(--accent-color); color: white;">すべて</button>
-        <button class="secondary" data-filter-type="category" data-filter-value="today" onclick="window.filterByCategory('today')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">今日の出来事</button>
-        <button class="secondary" data-filter-type="category" data-filter-value="thoughts" onclick="window.filterByCategory('thoughts')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">考え・気持ち</button>
-        <button class="secondary" data-filter-type="category" data-filter-value="omakase" onclick="window.filterByCategory('omakase')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">おまかせ</button>
-      </div>
-    </div>
-
-    <div style="margin-bottom: 1.5rem;">
-      <button class="secondary" onclick="window.openExportUI()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">📤 エクスポート</button>
-    </div>
-  `;
-
-  if (narratives.length === 0) {
-    html += `
-      <div style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
-        <p style="font-size: 1.2rem;">📚 ナラティブはまだありません</p>
-        <p>新しいナラティブを作成してみましょう</p>
-      </div>
-    `;
-  } else {
-    html += '<div id="history-list" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">';
-
-    narratives.forEach((n, idx) => {
-      const statusColor = {
-        'new': '#60a5fa',
-        'learning': '#fbbf24',
-        'mastered': '#4ade80'
-      }[n.srs?.status] || '#666';
-
-      // Using ID instead of index for operations
-      html += `
-        <div style="background: #0f172a; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid ${statusColor};">
-          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
-            <div>
-              <div style="font-weight: 600; margin-bottom: 0.25rem;">${n.category?.toUpperCase()}</div>
-              <div style="font-size: 0.9rem; color: var(--text-secondary);">${n.created_at?.split('T')[0]}</div>
-            </div>
-            <div style="text-align: right; font-size: 0.85rem;">
-              <div style="color: ${statusColor}; font-weight: 600; margin-bottom: 0.25rem;">${n.srs?.status}</div>
-              <div style="color: var(--text-secondary);">復習: ${n.srs?.review_count || 0}回</div>
-            </div>
-          </div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.5;">
-            ${n.narrative_en.substring(0, 100)}${n.narrative_en.length > 100 ? '...' : ''}
-          </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="secondary" onclick="window.viewNarrativeDetails('${n.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">詳細</button>
-            <button class="secondary" onclick="window.deleteNarrative('${n.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">削除</button>
-          </div>
+    <h2>📅 Journal Calendar</h2>
+    
+    <!-- Calendar Controls -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; background: #0f172a; padding: 1rem; border-radius: 0.5rem;">
+        <button class="secondary" onclick="window.changeMonth(-1)">◀</button>
+        <div style="font-size: 1.2rem; font-weight: bold;">
+            <span id="calendar-month-label"></span>
         </div>
-      `;
-    });
+        <button class="secondary" onclick="window.changeMonth(1)">▶</button>
+    </div>
 
-    html += '</div>';
-  }
+    <!-- Calendar Grid -->
+    <div id="calendar-grid" class="calendar-grid">
+        <!-- Injected by renderCalendar -->
+    </div>
 
-  html += `
-    <div style="display: flex; gap: 1rem;">
-      <button class="secondary" onclick="window.goToReviewDashboard()" style="flex: 1;">← 復習</button>
-      <button class="secondary" onclick="window.goToGenerate()" style="flex: 1;">✍️ 新規作成</button>
+    <!-- Selected Date Entries -->
+    <div id="selected-date-container" style="margin-top: 2rem;">
+        <h3 id="selected-date-label">Select a date</h3>
+        <div id="selected-date-entries"></div>
+    </div>
+    
+    <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+        <button class="secondary" onclick="window.goToReviewDashboard()" style="flex: 1;">← 復習</button>
+        <button class="secondary" onclick="window.goToGenerate()" style="flex: 1;">✍️ 新規作成</button>
     </div>
   `;
 
   container.innerHTML = html;
+  window.renderCalendar();
+}
+
+/**
+ * Render the Calendar Grid
+ */
+window.renderCalendar = () => {
+  const year = window.calendarState.currentYear;
+  const month = window.calendarState.currentMonth;
+
+  // Update Label
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  document.getElementById('calendar-month-label').textContent = `${monthNames[month]} ${year}`;
+
+  const grid = document.getElementById('calendar-grid');
+  grid.innerHTML = '';
+
+  // Day headers
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  days.forEach(d => {
+    const div = document.createElement('div');
+    div.className = 'calendar-header';
+    div.textContent = d;
+    grid.appendChild(div);
+  });
+
+  // Calendar logic
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) {
+    const div = document.createElement('div');
+    div.className = 'calendar-day empty';
+    grid.appendChild(div);
+  }
+
+  // Days
+  for (let d = 1; d <= daysInMonth; d++) {
+    const div = document.createElement('div');
+    div.className = 'calendar-day';
+
+    // Check for entries
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const entries = window.allNarratives.filter(n => n.created_at.startsWith(dateStr));
+
+    if (entries.length > 0) {
+      div.classList.add('has-entry');
+      const dot = document.createElement('div');
+      dot.className = 'entry-dot';
+      div.appendChild(dot);
+    }
+
+    // Check if selected
+    if (window.calendarState.selectedDate === dateStr) {
+      div.classList.add('selected');
+    }
+
+    div.onclick = () => window.selectDate(dateStr);
+
+    const number = document.createElement('span');
+    number.textContent = d;
+    div.appendChild(number);
+
+    grid.appendChild(div);
+  }
+};
+
+window.changeMonth = (delta) => {
+  let { currentMonth, currentYear } = window.calendarState;
+  currentMonth += delta;
+  if (currentMonth > 11) {
+    currentMonth = 0;
+    currentYear++;
+  } else if (currentMonth < 0) {
+    currentMonth = 11;
+    currentYear--;
+  }
+  window.calendarState.currentMonth = currentMonth;
+  window.calendarState.currentYear = currentYear;
+  window.renderCalendar();
+};
+
+window.selectDate = (dateStr) => {
+  window.calendarState.selectedDate = dateStr;
+  window.renderCalendar(); // Re-render to update selected style
+
+  // Render entries for the date
+  const label = document.getElementById('selected-date-label');
+  const container = document.getElementById('selected-date-entries');
+
+  label.textContent = `Entries for ${dateStr}`;
+  container.innerHTML = '';
+
+  const entries = window.allNarratives.filter(n => n.created_at.startsWith(dateStr));
+
+  if (entries.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-secondary)">No entries for this day.</p>';
+    return;
+  }
+
+  entries.forEach(n => {
+    const el = document.createElement('div');
+    el.style.cssText = 'background: #1e293b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 3px solid var(--accent-color);';
+    el.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 0.5rem;">${n.category}</div>
+            <div style="margin-bottom: 0.5rem; white-space: pre-wrap;">${n.narrative_en}</div>
+            <button class="secondary" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;" onclick="window.viewNarrativeDetails('${n.id}')">Details</button>
+        `;
+    container.appendChild(el);
+  });
+};
+
+/**
+ * Render filtered history list (Legacy - kept for compatibility if needed, but unused in calendar view)
+ */
+async function renderFilteredHistory(narratives) {
+  // No-op for now as we switched to calendar
 }
 
 // Global functions for UI navigation
@@ -441,57 +507,6 @@ window.historyFilters = {
   status: 'all',
   category: 'all'
 };
-
-/**
- * Render filtered history list
- */
-async function renderFilteredHistory(narratives) {
-  const container = document.getElementById('history-list');
-  if (!container) return;
-
-  if (narratives.length === 0) {
-    container.innerHTML = `
-      <div style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
-        <p style="font-size: 1.2rem;">📚 該当するナラティブが見つかりません</p>
-        <p>検索条件を変更してみてください</p>
-      </div>
-    `;
-    return;
-  }
-
-  let html = '';
-  narratives.forEach((n) => {
-    const statusColor = {
-      'new': '#60a5fa',
-      'learning': '#fbbf24',
-      'mastered': '#4ade80'
-    }[n.srs?.status] || '#666';
-
-    html += `
-      <div style="background: #0f172a; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid ${statusColor};">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
-          <div>
-            <div style="font-weight: 600; margin-bottom: 0.25rem;">${n.category?.toUpperCase()}</div>
-            <div style="font-size: 0.9rem; color: var(--text-secondary);">${n.created_at?.split('T')[0]}</div>
-          </div>
-          <div style="text-align: right; font-size: 0.85rem;">
-            <div style="color: ${statusColor}; font-weight: 600; margin-bottom: 0.25rem;">${n.srs?.status}</div>
-            <div style="color: var(--text-secondary);">復習: ${n.srs?.review_count || 0}回</div>
-          </div>
-        </div>
-        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.5;">
-          ${n.narrative_en.substring(0, 100)}${n.narrative_en.length > 100 ? '...' : ''}
-        </div>
-        <div style="display: flex; gap: 0.5rem;">
-          <button class="secondary" onclick="window.viewNarrativeDetails('${n.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">詳細</button>
-          <button class="secondary" onclick="window.deleteNarrative('${n.id}')" style="padding: 0.5rem 1rem; font-size: 0.85rem;">削除</button>
-        </div>
-      </div>
-    `;
-  });
-
-  container.innerHTML = html;
-}
 
 /**
  * Apply all filters and re-render history list

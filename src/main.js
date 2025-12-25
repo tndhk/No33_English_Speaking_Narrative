@@ -285,34 +285,21 @@ function renderResult() {
     h2.textContent = 'Your English Journal Entry';
     result.appendChild(h2);
 
-    // Narrative Box
+    // Narrative Box (Editable)
     const narrativeBox = document.createElement('div');
-    narrativeBox.id = 'narrative-sentences';
     narrativeBox.className = 'narrative-box';
 
-    // Split sentences and create elements
-    const sentences = data.narrative_en.split(/(?<=[.!?])\s+/);
-    sentences.forEach((s, index) => {
-        const item = document.createElement('div');
-        item.className = 'sentence-item';
+    const textarea = document.createElement('textarea');
+    textarea.className = 'editable-narrative';
+    textarea.style.cssText = 'width:100%; min-height:200px; background:transparent; border:none; color:inherit; font-size:1.1rem; line-height:1.6; resize:vertical; padding:0.5rem;';
+    textarea.value = data.narrative_en;
 
-        const playBtn = document.createElement('button');
-        playBtn.className = 'play-sentence-btn';
-        playBtn.title = 'Play sentence';
-        playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
-
-        const span = document.createElement('span');
-        span.className = 'sentence-text';
-        span.dataset.index = index;
-        span.textContent = s;
-
-        const playHandler = () => window.speak(s, index);
-        playBtn.onclick = playHandler;
-        span.onclick = playHandler;
-
-        item.append(playBtn, span);
-        narrativeBox.appendChild(item);
+    // Update state on change
+    textarea.addEventListener('input', (e) => {
+        state.narrative.narrative_en = e.target.value;
     });
+
+    narrativeBox.appendChild(textarea);
     result.appendChild(narrativeBox);
 
     // Actions
