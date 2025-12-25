@@ -323,15 +323,30 @@ function renderReviewSession() {
     narrativeText.style.cssText = 'font-size: 1rem; line-height: 1.8; margin-bottom: 1.5rem;';
     
     const sentences = narrative.narrative_en.split(/(?<=[.!?])\s+/);
-    sentences.forEach(s => {
+    sentences.forEach((s, index) => {
+      const item = document.createElement('div');
+      item.className = 'sentence-item';
+      item.style.marginBottom = '0.5rem';
+      
+      const playBtn = document.createElement('button');
+      playBtn.className = 'play-sentence-btn';
+      playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+      
       const span = document.createElement('span');
-      span.style.cssText = 'cursor: pointer; border-bottom: 1px dotted var(--accent-color); margin-right: 4px; display: inline-block;';
+      span.className = 'sentence-text';
+      span.dataset.index = index;
       span.textContent = s;
-      span.onclick = (e) => {
-        e.stopPropagation();
-        window.speak(s);
+      
+      const playHandler = (e) => {
+        if (e) e.stopPropagation();
+        window.speak(s, index, narrative.narrative_en);
       };
-      narrativeText.appendChild(span);
+      
+      playBtn.onclick = playHandler;
+      span.onclick = playHandler;
+      
+      item.append(playBtn, span);
+      narrativeText.appendChild(item);
     });
     contentBox.appendChild(narrativeText);
     
@@ -413,7 +428,7 @@ function renderReviewSession() {
   speakBtn.className = 'secondary';
   speakBtn.style.flex = '1';
   speakBtn.textContent = '📢 再生';
-  speakBtn.onclick = () => window.speak();
+  speakBtn.onclick = () => window.speak(null, null, narrative.narrative_en);
   
   const detailBtn = document.createElement('button');
   detailBtn.className = 'secondary';

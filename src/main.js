@@ -277,17 +277,29 @@ function renderResult() {
     const narrativeBox = document.createElement('div');
     narrativeBox.id = 'narrative-sentences';
     narrativeBox.className = 'narrative-box';
-    narrativeBox.style.cssText = 'background:#0f172a; padding:1.5rem; border-radius:1rem; margin-bottom:1.5rem; font-size:1.1rem; line-height:1.8;';
 
-    // Split sentences and create spans
+    // Split sentences and create elements
     const sentences = data.narrative_en.split(/(?<=[.!?])\s+/);
-    sentences.forEach(s => {
+    sentences.forEach((s, index) => {
+        const item = document.createElement('div');
+        item.className = 'sentence-item';
+        
+        const playBtn = document.createElement('button');
+        playBtn.className = 'play-sentence-btn';
+        playBtn.title = 'Play sentence';
+        playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+        
         const span = document.createElement('span');
-        span.className = 'sentence';
+        span.className = 'sentence-text';
+        span.dataset.index = index;
         span.textContent = s;
-        span.style.cssText = 'cursor:pointer; display:inline-block; margin-right:4px;';
-        span.onclick = () => window.speak(s);
-        narrativeBox.appendChild(span);
+        
+        const playHandler = () => window.speak(s, index);
+        playBtn.onclick = playHandler;
+        span.onclick = playHandler;
+        
+        item.append(playBtn, span);
+        narrativeBox.appendChild(item);
     });
     result.appendChild(narrativeBox);
 
@@ -388,19 +400,65 @@ function renderResult() {
     result.appendChild(bottomActions);
 }
 
-window.speak = (text) => {
-    const target = text || state.narrative.narrative_en;
-    const msg = new SpeechSynthesisUtterance(target);
-    const voices = window.speechSynthesis.getVoices();
-    // Default to a natural sounding English voice
-    msg.voice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google') && v.name.includes('Male')) ||
-        voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) ||
-        voices.find(v => v.lang === 'en-US' && v.name.includes('Male')) ||
-        voices.find(v => v.lang === 'en-US') ||
-        voices.find(v => v.lang.startsWith('en'));
-    msg.rate = state.settings.rate;
+window.speak = (text, index, fullTextOverride) => {
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(msg);
+    
+    const clearHighlights = () => {
+        document.querySelectorAll('.sentence-text').forEach(el => el.classList.remove('playing'));
+    };
+
+    clearHighlights();
+    
+    const narrativeText = fullTextOverride || (state.narrative ? state.narrative.narrative_en : '');
+    if (!narrativeText && !text) return;
+    
+    const sentences = narrativeText.split(/(?<=[.!?])\s+/);
+    
+    const setVoiceAndRate = (msg) => {
+        const voices = window.speechSynthesis.getVoices();
+        msg.voice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google') && v.name.includes('Male')) ||
+            voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) ||
+            voices.find(v => v.lang === 'en-US' && v.name.includes('Male')) ||
+            voices.find(v => v.lang === 'en-US') ||
+            voices.find(v => v.lang.startsWith('en'));
+        msg.rate = state.settings.rate;
+    };
+
+    const highlightSentence = (idx) => {
+        clearHighlights();
+        const span = document.querySelector(`.sentence-text[data-index="${idx}"]`);
+        if (span) span.classList.add('playing');
+    };
+
+    if (text) {
+        // Play single sentence
+        const msg = new SpeechSynthesisUtterance(text);
+        setVoiceAndRate(msg);
+        msg.onstart = () => highlightSentence(index);
+        msg.onend = () => clearHighlights();
+        msg.onerror = () => clearHighlights();
+        window.speechSynthesis.speak(msg);
+    } else {
+        // Play all sentences in sequence
+        let current = 0;
+        const playNext = () => {
+            if (current < sentences.length) {
+                const msg = new SpeechSynthesisUtterance(sentences[current]);
+                setVoiceAndRate(msg);
+                const currentIndex = current;
+                msg.onstart = () => highlightSentence(currentIndex);
+                msg.onend = () => {
+                    current++;
+                    playNext();
+                };
+                msg.onerror = () => clearHighlights();
+                window.speechSynthesis.speak(msg);
+            } else {
+                clearHighlights();
+            }
+        };
+        playNext();
+    }
 };
 
 window.copy = () => {
