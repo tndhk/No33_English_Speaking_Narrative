@@ -12,6 +12,7 @@ on:
 
 jobs:
   deploy:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -41,8 +42,8 @@ jobs:
 
   # Optional: Deploy backend functions with secrets
   deploy-functions:
+    if: false
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Only on main branch
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
