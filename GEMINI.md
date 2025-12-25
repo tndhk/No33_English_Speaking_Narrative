@@ -1,8 +1,8 @@
-# GEMINI.md
+# My English Journal (formerly Gemini Narrative AI)
 
 ## Project Overview
 
-This is a web application designed to help users improve their English speaking skills. It uses an AI (likely Google Gemini) to generate English narratives from user input. The frontend is built with vanilla JavaScript and Vite, and the backend is powered by Cloudflare Pages Functions. Supabase is used for the database and user authentication.
+This is a web application designed to help users improve their English speaking skills by writing diaries. It uses an AI (likely Google Gemini) to generate English journal entries from user input. The frontend is built with vanilla JavaScript and Vite, and the backend is powered by Cloudflare Pages Functions. Supabase is used for the database and user authentication.
 
 ## Building and Running
 

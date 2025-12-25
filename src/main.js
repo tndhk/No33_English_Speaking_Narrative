@@ -15,9 +15,9 @@ window.state = {
 const state = window.state;
 
 const categories = [
-    { id: 'today', label: '今日の出来事', description: '今日あった出来事や会話をナラティブにします。' },
-    { id: 'thoughts', label: '考え・気持ち', description: '頭の中にある抽象的なアイデアを明確に言語化します。' },
-    { id: 'omakase', label: 'おまかせ', description: '自由にトピックを入力してください。' }
+    { id: 'today', label: '今日の出来事', description: '今日あった出来事や会話を日記（ジャーナル）にします。' },
+    { id: 'thoughts', label: '考え・気持ち', description: '頭の中にある抽象的なアイデアを日記として言語化します。' },
+    { id: 'omakase', label: 'おまかせ', description: '自由にトピックを入力して日記を書きましょう。' }
 ];
 
 const questions = {
@@ -233,7 +233,7 @@ window.hideLoading = () => {
 };
 
 async function generateNarrative() {
-    window.showLoading('Crafting your narrative...');
+    window.showLoading('Writing your journal entry...');
 
     try {
         const session = window.auth.getCurrentSession();
@@ -282,7 +282,7 @@ function renderResult() {
     result.innerHTML = '';
 
     const h2 = document.createElement('h2');
-    h2.textContent = 'Your English Narrative';
+    h2.textContent = 'Your English Journal Entry';
     result.appendChild(h2);
 
     // Narrative Box
@@ -343,7 +343,7 @@ function renderResult() {
 
     const saveBtn = document.createElement('button');
     saveBtn.className = 'primary';
-    saveBtn.textContent = '💾 Save for Review';
+    saveBtn.textContent = '💾 Save to Journal';
     saveBtn.style.cssText = 'width:100%; margin-bottom:1.5rem;';
     saveBtn.onclick = () => window.saveNarrativeForReview();
     result.appendChild(saveBtn);
@@ -474,7 +474,7 @@ window.speak = (text, index, fullTextOverride) => {
 };
 
 window.copy = () => {
-    const text = `【Narrative】\n${state.narrative.narrative_en}\n\n【Recall Test】\n${state.narrative.recall_test?.prompt_ja || ''}`;
+    const text = `【Journal Entry】\n${state.narrative.narrative_en}\n\n【Recall Test】\n${state.narrative.recall_test?.prompt_ja || ''}`;
 
     // Fallback for HTTP (local development)
     if (navigator.clipboard && window.isSecureContext) {
@@ -497,7 +497,7 @@ window.download = () => {
 
     const a = document.createElement('a');
     a.href = dataUri;
-    a.download = `narrative_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `journal_${new Date().toISOString().split('T')[0]}.json`;
     a.target = '_blank';
     document.body.appendChild(a);
     a.click();
@@ -529,7 +529,7 @@ window.saveNarrativeForReview = async () => {
         const saved = await window.storage?.saveNarrative(state.narrative, metadata);
 
         if (saved) {
-            alert('✅ Narrative saved! Ready for review.');
+            alert('✅ Journal entry saved! Ready for review.');
             // Optionally navigate to review dashboard
             setTimeout(() => window.goToReviewDashboard(), 500);
         } else {

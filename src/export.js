@@ -61,11 +61,11 @@ async function exportAsMarkdown() {
   try {
     const narratives = (await window.storage?.getAllNarratives()) || [];
     if (narratives.length === 0) {
-      alert('エクスポートするナラティブがありません');
+      alert('エクスポートする日記（ジャーナル）がありません');
       return;
     }
 
-    let md = '# English Narrative Archive\n\n';
+    let md = '# English Journal Archive\n\n';
     md += `Generated: ${new Date().toLocaleString('ja-JP')}\n\n`;
     md += `Total Narratives: ${narratives.length}\n\n`;
     md += '---\n\n';
@@ -134,7 +134,7 @@ function importFromJSON(file) {
           resolve({
             success: true,
             count: imported.length,
-            message: `${imported.length}件のナラティブをインポートしました`
+            message: `${imported.length}件の日記（ジャーナル）をインポートしました`
           });
         } else {
           reject(new Error('インポートできるナラティブが見つかりません'));
@@ -166,7 +166,7 @@ async function renderExportUI() {
     <h2>📤 データをエクスポート</h2>
 
     <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
-      <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary);">保存されているナラティブ数</p>
+      <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary);">保存されている日記の数</p>
       <p style="font-size: 2rem; margin: 0; color: var(--accent-color);">${narratives.length}</p>
       <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--text-tertiary);">
         保存容量: ${stats?.total_storage_kb || 0} KB
