@@ -1,5 +1,5 @@
 ---
-trigger: always_on
+alwaysApply: true
 ---
 
 # v5: Coding support rules

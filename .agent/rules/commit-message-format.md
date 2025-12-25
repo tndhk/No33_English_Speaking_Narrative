@@ -1,11 +1,5 @@
 ---
-trigger: model_decision
-description: Gitコミットメッセージ作成時に適用。Conventional Commits ベースの Prefix + 日本語サマリ + 箇条書き本文の書式ルール
----
-
----
-trigger: model_decision
-description: Gitコミットメッセージ作成時に適用。Conventional Commits ベースの Prefix + 日本語サマリ + 箇条書き本文の書式ルール
+alwaysApply: true
 ---
 
 # Gitコミットメッセージの書式ルール
