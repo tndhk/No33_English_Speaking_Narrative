@@ -25,11 +25,64 @@ const questions = {
     omakase: ['何を英語にしたいですか？', '特に強調したいニュアンスはありますか？']
 };
 
-function init() {
+async function init() {
+    // Initialize authentication first
+    await window.auth.initAuth();
+
+    // Render auth UI
+    const authContainer = document.getElementById('auth-ui-container');
+    window.auth.renderAuthUI(authContainer);
+
+    // Set up auth state change listener
+    window.addEventListener('authStateChanged', (event) => {
+        const { user } = event.detail;
+
+        // Update UI visibility based on auth state
+        const appContent = document.getElementById('app-content');
+        const authRequired = document.getElementById('auth-required');
+
+        if (user) {
+            // User is authenticated - show app
+            appContent.style.display = 'block';
+            authRequired.style.display = 'none';
+
+            // Initialize app components
+            if (!window.appInitialized) {
+                initializeApp();
+                window.appInitialized = true;
+            }
+
+            // Refresh content for the current view
+            if (window.refreshCurrentView) {
+                window.refreshCurrentView();
+            }
+        } else {
+            // User is not authenticated - show login
+            appContent.style.display = 'none';
+            authRequired.style.display = 'block';
+        }
+    });
+
+    // If already authenticated, show app immediately
+    if (window.auth.isAuthenticated()) {
+        document.getElementById('app-content').style.display = 'block';
+        document.getElementById('auth-required').style.display = 'none';
+        initializeApp();
+        window.appInitialized = true;
+    } else {
+        document.getElementById('auth-required').style.display = 'block';
+    }
+}
+
+function initializeApp() {
     renderStep();
 
     document.getElementById('next-btn').addEventListener('click', handleNext);
     document.getElementById('prev-btn').addEventListener('click', handlePrev);
+
+    // Show navigation and update
+    window.showNavigation();
+    window.updateNavigation();
 }
 
 function renderStep() {
@@ -417,8 +470,5 @@ window.newNarrative = () => {
     window.renderStep();
 };
 
+// Initialize the application
 init();
-
-// Show navigation tabs and update on initialization
-window.showNavigation();
-window.updateNavigation();
