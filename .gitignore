@@ -4,4 +4,5 @@ node_modules/
 .apikey
 .DS_Store
 dist/
+.dev.vars
 .env

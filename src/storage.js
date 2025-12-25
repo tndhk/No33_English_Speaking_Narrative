@@ -106,11 +106,14 @@ async function saveNarrative(narrative, metadata = {}) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase insert error details:', error);
+      throw error;
+    }
     return transformFromDB(data);
   } catch (error) {
-    console.error('Error saving narrative:', error);
-    throw new Error('Failed to save narrative');
+    console.error('Detailed save error:', error);
+    throw new Error('Failed to save narrative: ' + (error.message || 'Unknown error'));
   }
 }
 

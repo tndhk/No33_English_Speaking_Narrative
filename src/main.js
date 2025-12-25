@@ -1,4 +1,4 @@
-const state = {
+window.state = {
     step: 0,
     category: null,
     answers: [],
@@ -416,6 +416,19 @@ window.newNarrative = () => {
     window.updateNavigation();
     window.renderStep();
 };
+
+// Expose internal functions to window for global access in modules and HTML onclicks
+Object.assign(window, {
+    renderStep,
+    renderCategorySelect,
+    renderQuestionForm,
+    renderOutputSettings,
+    handleNext,
+    handlePrev,
+    generateNarrative,
+    renderResult,
+    init
+});
 
 init();
 

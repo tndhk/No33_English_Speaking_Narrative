@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:full": "npx wrangler pages dev src",
+    "dev:full": "npx wrangler pages dev src --binding GEMINI_API_KEY=AIzaSyC_E33eQ2CsYT4mhSZlRrts126z7Utjeig --binding DEEPSEEK_API_KEY=sk-56b1af3dd6b243a29d57d5b432622d48",
     "build": "vite build",
     "preview": "vite preview"
   },
