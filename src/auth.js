@@ -245,88 +245,11 @@ export function renderAuthUI(container) {
       }
     });
 
-    // Form
-    const form = document.createElement('form');
-    form.id = 'auth-form';
-    form.className = 'auth-form-fields';
-
-    // Email Group
-    const emailGroup = document.createElement('div');
-    emailGroup.className = 'form-group';
-
-    const emailLabel = document.createElement('label');
-    emailLabel.htmlFor = 'auth-email';
-    emailLabel.textContent = 'メールアドレス';
-
-    const emailInput = document.createElement('input');
-    emailInput.type = 'email';
-    emailInput.id = 'auth-email';
-    emailInput.placeholder = 'example@email.com';
-    emailInput.required = true;
-    emailInput.autocomplete = 'email';
-
-    emailGroup.appendChild(emailLabel);
-    emailGroup.appendChild(emailInput);
-
-    // Password Group
-    const passGroup = document.createElement('div');
-    passGroup.className = 'form-group';
-
-    const passLabel = document.createElement('label');
-    passLabel.htmlFor = 'auth-password';
-    passLabel.textContent = 'パスワード';
-
-    const passInput = document.createElement('input');
-    passInput.type = 'password';
-    passInput.id = 'auth-password';
-    passInput.placeholder = '6文字以上';
-    passInput.required = true;
-    passInput.minLength = 6;
-    passInput.autocomplete = 'current-password';
-
-    passGroup.appendChild(passLabel);
-    passGroup.appendChild(passInput);
-
-    // Error Div
-    const errorDiv = document.createElement('div');
-    errorDiv.id = 'auth-error';
-    errorDiv.className = 'auth-error';
-    errorDiv.style.display = 'none';
-
-    // Submit Button
-    const submitBtn = document.createElement('button');
-    submitBtn.type = 'submit';
-    submitBtn.id = 'auth-submit-btn';
-    submitBtn.className = 'btn btn-primary';
-    submitBtn.textContent = 'ログイン';
-
-    form.appendChild(emailGroup);
-    form.appendChild(passGroup);
-    form.appendChild(errorDiv);
-    form.appendChild(submitBtn);
-
     authFormDiv.appendChild(title);
     authFormDiv.appendChild(desc);
     authFormDiv.appendChild(googleBtn);
-
-    // Optional divider
-    const divider = document.createElement('div');
-    divider.className = 'auth-divider';
-    divider.innerHTML = '<span>または</span>';
-    authFormDiv.appendChild(divider);
-
-    authFormDiv.appendChild(form);
     wrapper.appendChild(authFormDiv);
     container.appendChild(wrapper);
-
-    // Set up form handlers (must be called after elements are in DOM or attached manually here)
-    // Since we are rebuilding DOM, existing event listeners are lost. 
-    // We can call setupAuthFormHandlers() OR attach logic here. 
-    // Let's call setupAuthFormHandlers() but we need to make sure the elements exist in DOM first 
-    // or pass them to the function.
-    // The original code called setupAuthFormHandlers() which looked up by ID.
-    // Since we append to container, they will be in DOM.
-    setTimeout(() => setupAuthFormHandlers(), 0);
   }
 }
 
@@ -334,71 +257,8 @@ export function renderAuthUI(container) {
  * Set up authentication form handlers
  */
 function setupAuthFormHandlers() {
-  const loginTab = document.getElementById('tab-login');
-  const signupTab = document.getElementById('tab-signup');
-  const form = document.getElementById('auth-form');
-  const submitBtn = document.getElementById('auth-submit-btn');
-  const errorDiv = document.getElementById('auth-error');
-
-  let isLoginMode = true;
-
-  // Tab switching
-  loginTab?.addEventListener('click', () => {
-    isLoginMode = true;
-    loginTab.classList.add('active');
-    signupTab.classList.remove('active');
-    submitBtn.textContent = 'ログイン';
-    errorDiv.style.display = 'none';
-  });
-
-  signupTab?.addEventListener('click', () => {
-    isLoginMode = false;
-    signupTab.classList.add('active');
-    loginTab.classList.remove('active');
-    submitBtn.textContent = '新規登録';
-    errorDiv.style.display = 'none';
-  });
-
-  // Form submission
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById('auth-email').value;
-    const password = document.getElementById('auth-password').value;
-
-    // Disable form during submission
-    submitBtn.disabled = true;
-    submitBtn.textContent = '処理中...';
-    errorDiv.style.display = 'none';
-
-    try {
-      let result;
-      if (isLoginMode) {
-        result = await signIn(email, password);
-      } else {
-        result = await signUp(email, password);
-      }
-
-      if (result.success) {
-        if (!isLoginMode) {
-          // Show success message for signup
-          alert('登録が完了しました！確認メールをご確認ください。');
-        }
-        // Form will be replaced by logged-in UI via auth state change
-      } else {
-        // Show error
-        errorDiv.textContent = getJapaneseErrorMessage(result.error);
-        errorDiv.style.display = 'block';
-      }
-    } catch (error) {
-      errorDiv.textContent = 'エラーが発生しました。もう一度お試しください。';
-      errorDiv.style.display = 'block';
-    } finally {
-      // Re-enable form
-      submitBtn.disabled = false;
-      submitBtn.textContent = isLoginMode ? 'ログイン' : '新規登録';
-    }
-  });
+  // This function is no longer needed for Google-only login
+  // Keeping it for backward compatibility but it does nothing
 }
 
 /**
