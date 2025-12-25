@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:full": "npx wrangler pages dev src",
+    "dev:backend": "wrangler pages dev dist --compatibility-flags nodejs_compat",
+    "dev:all": "npm run build && npm run dev:backend",
     "build": "vite build",
     "preview": "vite preview"
   },
