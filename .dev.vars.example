@@ -1,0 +1,26 @@
+# Cloudflare Pages Functions Environment Variables
+# Copy this file to .dev.vars and fill in your actual API keys
+# .dev.vars is ignored by git for security reasons
+
+# Google Gemini API Key
+# Get from: https://aistudio.google.com/apikey
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# DeepSeek API Key
+# Get from: https://platform.deepseek.com/
+DEEPSEEK_API_KEY=your_deepseek_api_key_here
+
+# xAI Grok API Key
+# Get from: https://console.x.ai/
+GROK_API_KEY=your_grok_api_key_here
+
+# Supabase Configuration (Production)
+# Get from: https://supabase.com/dashboard
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_API_KEY=your_supabase_api_key_here
+
+# Optional: CORS Configuration for API
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+
+# Optional: Environment Stage
+ENVIRONMENT=development
