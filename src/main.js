@@ -128,8 +128,26 @@ function renderQuestionForm(container) {
     qList.forEach((q, i) => {
         const group = document.createElement('div');
         group.style.marginBottom = '1.5rem';
-        group.innerHTML = `<label style="display:block; margin-bottom:0.5rem; color:var(--text-secondary)">${q}</label>
-                           <textarea data-index="${i}" style="width:100%; padding:0.75rem; border-radius:0.5rem; background:#0f172a; border:1px solid var(--border-color); color:#fff; min-height:80px;">${state.answers[i] || ''}</textarea>`;
+
+        const label = document.createElement('label');
+        label.style.display = 'block';
+        label.style.marginBottom = '0.5rem';
+        label.style.color = 'var(--text-secondary)';
+        label.textContent = q;
+
+        const textarea = document.createElement('textarea');
+        textarea.dataset.index = i;
+        textarea.style.width = '100%';
+        textarea.style.padding = '0.75rem';
+        textarea.style.borderRadius = '0.5rem';
+        textarea.style.background = '#0f172a';
+        textarea.style.border = '1px solid var(--border-color)';
+        textarea.style.color = '#fff';
+        textarea.style.minHeight = '80px';
+        textarea.value = state.answers[i] || '';
+
+        group.appendChild(label);
+        group.appendChild(textarea);
         container.appendChild(group);
     });
 }
@@ -211,9 +229,17 @@ async function generateNarrative() {
     window.showLoading('Crafting your narrative...');
 
     try {
+        const session = window.auth.getCurrentSession();
+        if (!session) {
+            throw new Error('User not authenticated');
+        }
+
         const response = await fetch('/api/generate', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+            },
             body: JSON.stringify({
                 category: state.category,
                 answers: state.answers,
@@ -239,43 +265,127 @@ function renderResult() {
 
     wizard.style.display = 'none';
     result.style.display = 'block';
+    
+    // Clear previous content
+    result.innerHTML = '';
 
-    result.innerHTML = `
-        <h2>Your English Narrative</h2>
-        <div id="narrative-sentences" class="narrative-box" style="background:#0f172a; padding:1.5rem; border-radius:1rem; margin-bottom:1.5rem; font-size:1.1rem; line-height:1.8;">
-            ${data.narrative_en.split(/(?<=[.!?])\s+/).map((s, i) => `<span class="sentence" onclick="window.speak('${s.replace(/'/g, "\\'")}')" style="cursor:pointer; display:inline-block; margin-right:4px;">${s}</span>`).join('')}
-        </div>
+    const h2 = document.createElement('h2');
+    h2.textContent = 'Your English Narrative';
+    result.appendChild(h2);
 
-        <div class="actions" style="display:flex; gap:1rem; margin-bottom:2rem; flex-wrap:wrap;">
-            <button class="primary" onclick="window.speak()" style="flex:1;">Play Full</button>
-            <button class="secondary" onclick="window.copy()" style="flex:1;">Copy</button>
-            <button class="secondary" onclick="window.download()" style="flex:1;">JSON</button>
-        </div>
+    // Narrative Box
+    const narrativeBox = document.createElement('div');
+    narrativeBox.id = 'narrative-sentences';
+    narrativeBox.className = 'narrative-box';
+    narrativeBox.style.cssText = 'background:#0f172a; padding:1.5rem; border-radius:1rem; margin-bottom:1.5rem; font-size:1.1rem; line-height:1.8;';
 
-        <button class="primary" onclick="window.saveNarrativeForReview()" style="width:100%; margin-bottom:1.5rem;">💾 Save for Review</button>
+    // Split sentences and create spans
+    const sentences = data.narrative_en.split(/(?<=[.!?])\s+/);
+    sentences.forEach(s => {
+        const span = document.createElement('span');
+        span.className = 'sentence';
+        span.textContent = s;
+        span.style.cssText = 'cursor:pointer; display:inline-block; margin-right:4px;';
+        span.onclick = () => window.speak(s);
+        narrativeBox.appendChild(span);
+    });
+    result.appendChild(narrativeBox);
 
-        <h3>Key Phrases</h3>
-        <ul style="list-style:none; padding:0; margin-bottom:2rem;">
-            ${data.key_phrases.map(p => `
-                <li style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color)">
-                    <div style="font-weight:600; color:var(--accent-color)">${p.phrase_en}</div>
-                    <div style="font-size:0.9rem">${p.meaning_ja}</div>
-                    <div style="font-size:0.8rem; color:var(--text-secondary)">${p.usage_hint_ja}</div>
-                </li>
-            `).join('')}
-        </ul>
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    actions.style.cssText = 'display:flex; gap:1rem; margin-bottom:2rem; flex-wrap:wrap;';
 
-        <h3>Recall Test</h3>
-        <p style="color:var(--text-secondary); margin-bottom:1rem;">次の要点を英語で言ってみましょう：</p>
-        <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:0.5rem; margin-bottom:1.5rem;">
-            ${data.recall_test.prompt_ja}
-        </div>
+    const playBtn = document.createElement('button');
+    playBtn.className = 'primary';
+    playBtn.textContent = 'Play Full';
+    playBtn.onclick = () => window.speak();
+    playBtn.style.flex = '1';
+    
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'secondary';
+    copyBtn.textContent = 'Copy';
+    copyBtn.onclick = () => window.copy();
+    copyBtn.style.flex = '1';
 
-        <div style="display:flex; gap:1rem;">
-            <button class="secondary" onclick="window.newNarrative()" style="flex:1;">New</button>
-            <button class="secondary" onclick="window.goToReviewDashboard()" style="flex:1;">Review</button>
-        </div>
-    `;
+    const jsonBtn = document.createElement('button');
+    jsonBtn.className = 'secondary';
+    jsonBtn.textContent = 'JSON';
+    jsonBtn.onclick = () => window.download();
+    jsonBtn.style.flex = '1';
+
+    actions.append(playBtn, copyBtn, jsonBtn);
+    result.appendChild(actions);
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'primary';
+    saveBtn.textContent = '💾 Save for Review';
+    saveBtn.style.cssText = 'width:100%; margin-bottom:1.5rem;';
+    saveBtn.onclick = () => window.saveNarrativeForReview();
+    result.appendChild(saveBtn);
+
+    // Key Phrases
+    const h3Phrases = document.createElement('h3');
+    h3Phrases.textContent = 'Key Phrases';
+    result.appendChild(h3Phrases);
+
+    const ul = document.createElement('ul');
+    ul.style.cssText = 'list-style:none; padding:0; margin-bottom:2rem;';
+    
+    data.key_phrases.forEach(p => {
+        const li = document.createElement('li');
+        li.style.cssText = 'margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color)';
+        
+        const phraseDiv = document.createElement('div');
+        phraseDiv.style.cssText = 'font-weight:600; color:var(--accent-color)';
+        phraseDiv.textContent = p.phrase_en;
+
+        const meaningDiv = document.createElement('div');
+        meaningDiv.style.fontSize = '0.9rem';
+        meaningDiv.textContent = p.meaning_ja;
+
+        const usageDiv = document.createElement('div');
+        usageDiv.style.cssText = 'font-size:0.8rem; color:var(--text-secondary)';
+        usageDiv.textContent = p.usage_hint_ja;
+
+        li.append(phraseDiv, meaningDiv, usageDiv);
+        ul.appendChild(li);
+    });
+    result.appendChild(ul);
+
+    // Recall Test
+    const h3Recall = document.createElement('h3');
+    h3Recall.textContent = 'Recall Test';
+    result.appendChild(h3Recall);
+
+    const pRecall = document.createElement('p');
+    pRecall.style.cssText = 'color:var(--text-secondary); margin-bottom:1rem;';
+    pRecall.textContent = '次の要点を英語で言ってみましょう：';
+    result.appendChild(pRecall);
+
+    const promptDiv = document.createElement('div');
+    promptDiv.style.cssText = 'background:rgba(255,255,255,0.05); padding:1rem; border-radius:0.5rem; margin-bottom:1.5rem;';
+    promptDiv.textContent = data.recall_test.prompt_ja;
+    result.appendChild(promptDiv);
+
+    // Bottom Actions
+    const bottomActions = document.createElement('div');
+    bottomActions.style.cssText = 'display:flex; gap:1rem;';
+    
+    const newBtn = document.createElement('button');
+    newBtn.className = 'secondary';
+    newBtn.textContent = 'New';
+    newBtn.style.flex = '1';
+    newBtn.onclick = () => window.newNarrative();
+
+    const reviewBtn = document.createElement('button');
+    reviewBtn.className = 'secondary';
+    reviewBtn.textContent = 'Review';
+    reviewBtn.style.flex = '1';
+    reviewBtn.onclick = () => window.goToReviewDashboard();
+
+    bottomActions.append(newBtn, reviewBtn);
+    result.appendChild(bottomActions);
 }
 
 window.speak = (text) => {

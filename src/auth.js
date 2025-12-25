@@ -140,85 +140,158 @@ export function getUserId() {
  */
 export function renderAuthUI(container) {
   if (!container) return;
+  
+  // Clear container
+  container.innerHTML = '';
 
   if (authState.loading) {
-    container.innerHTML = `
-      <div class="auth-container">
-        <div class="auth-loading">読み込み中...</div>
-      </div>
-    `;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'auth-container';
+    
+    const loading = document.createElement('div');
+    loading.className = 'auth-loading';
+    loading.textContent = '読み込み中...';
+    
+    wrapper.appendChild(loading);
+    container.appendChild(wrapper);
     return;
   }
 
   if (authState.user) {
-    // User is logged in - show user info and logout button
-    container.innerHTML = `
-      <div class="auth-container auth-logged-in">
-        <div class="user-info">
-          <span class="user-email">${authState.user.email}</span>
-          <button id="logout-btn" class="btn btn-secondary">ログアウト</button>
-        </div>
-      </div>
-    `;
-
-    // Add logout handler
-    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+    // User is logged in
+    const wrapper = document.createElement('div');
+    wrapper.className = 'auth-container auth-logged-in';
+    
+    const userInfo = document.createElement('div');
+    userInfo.className = 'user-info';
+    
+    const emailSpan = document.createElement('span');
+    emailSpan.className = 'user-email';
+    emailSpan.textContent = authState.user.email;
+    
+    const logoutBtn = document.createElement('button');
+    logoutBtn.id = 'logout-btn';
+    logoutBtn.className = 'btn btn-secondary';
+    logoutBtn.textContent = 'ログアウト';
+    logoutBtn.addEventListener('click', async () => {
       const result = await signOut();
       if (!result.success) {
         alert('ログアウトに失敗しました: ' + result.error);
       }
     });
+
+    userInfo.appendChild(emailSpan);
+    userInfo.appendChild(logoutBtn);
+    wrapper.appendChild(userInfo);
+    container.appendChild(wrapper);
   } else {
-    // User is not logged in - show login/signup form
-    container.innerHTML = `
-      <div class="auth-container auth-logged-out">
-        <div class="auth-form">
-          <h2 class="auth-title">ログイン / 新規登録</h2>
-          <p class="auth-description">
-            学習履歴と設定を保存するには、アカウントが必要です。
-          </p>
+    // User is not logged in
+    const wrapper = document.createElement('div');
+    wrapper.className = 'auth-container auth-logged-out';
+    
+    const authFormDiv = document.createElement('div');
+    authFormDiv.className = 'auth-form';
+    
+    const title = document.createElement('h2');
+    title.className = 'auth-title';
+    title.textContent = 'ログイン / 新規登録';
+    
+    const desc = document.createElement('p');
+    desc.className = 'auth-description';
+    desc.textContent = '学習履歴と設定を保存するには、アカウントが必要です。';
+    
+    // Tabs
+    const tabs = document.createElement('div');
+    tabs.className = 'form-tabs';
+    
+    const loginTab = document.createElement('button');
+    loginTab.id = 'tab-login';
+    loginTab.className = 'tab-btn active';
+    loginTab.textContent = 'ログイン';
+    
+    const signupTab = document.createElement('button');
+    signupTab.id = 'tab-signup';
+    signupTab.className = 'tab-btn';
+    signupTab.textContent = '新規登録';
+    
+    tabs.appendChild(loginTab);
+    tabs.appendChild(signupTab);
+    
+    // Form
+    const form = document.createElement('form');
+    form.id = 'auth-form';
+    form.className = 'auth-form-fields';
+    
+    // Email Group
+    const emailGroup = document.createElement('div');
+    emailGroup.className = 'form-group';
+    
+    const emailLabel = document.createElement('label');
+    emailLabel.htmlFor = 'auth-email';
+    emailLabel.textContent = 'メールアドレス';
+    
+    const emailInput = document.createElement('input');
+    emailInput.type = 'email';
+    emailInput.id = 'auth-email';
+    emailInput.placeholder = 'example@email.com';
+    emailInput.required = true;
+    emailInput.autocomplete = 'email';
+    
+    emailGroup.appendChild(emailLabel);
+    emailGroup.appendChild(emailInput);
+    
+    // Password Group
+    const passGroup = document.createElement('div');
+    passGroup.className = 'form-group';
+    
+    const passLabel = document.createElement('label');
+    passLabel.htmlFor = 'auth-password';
+    passLabel.textContent = 'パスワード';
+    
+    const passInput = document.createElement('input');
+    passInput.type = 'password';
+    passInput.id = 'auth-password';
+    passInput.placeholder = '6文字以上';
+    passInput.required = true;
+    passInput.minLength = 6;
+    passInput.autocomplete = 'current-password';
+    
+    passGroup.appendChild(passLabel);
+    passGroup.appendChild(passInput);
+    
+    // Error Div
+    const errorDiv = document.createElement('div');
+    errorDiv.id = 'auth-error';
+    errorDiv.className = 'auth-error';
+    errorDiv.style.display = 'none';
+    
+    // Submit Button
+    const submitBtn = document.createElement('button');
+    submitBtn.type = 'submit';
+    submitBtn.id = 'auth-submit-btn';
+    submitBtn.className = 'btn btn-primary';
+    submitBtn.textContent = 'ログイン';
+    
+    form.appendChild(emailGroup);
+    form.appendChild(passGroup);
+    form.appendChild(errorDiv);
+    form.appendChild(submitBtn);
+    
+    authFormDiv.appendChild(title);
+    authFormDiv.appendChild(desc);
+    authFormDiv.appendChild(tabs);
+    authFormDiv.appendChild(form);
+    wrapper.appendChild(authFormDiv);
+    container.appendChild(wrapper);
 
-          <div class="form-tabs">
-            <button id="tab-login" class="tab-btn active">ログイン</button>
-            <button id="tab-signup" class="tab-btn">新規登録</button>
-          </div>
-
-          <form id="auth-form" class="auth-form-fields">
-            <div class="form-group">
-              <label for="auth-email">メールアドレス</label>
-              <input
-                type="email"
-                id="auth-email"
-                placeholder="example@email.com"
-                required
-                autocomplete="email"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="auth-password">パスワード</label>
-              <input
-                type="password"
-                id="auth-password"
-                placeholder="6文字以上"
-                required
-                minlength="6"
-                autocomplete="current-password"
-              />
-            </div>
-
-            <div id="auth-error" class="auth-error" style="display: none;"></div>
-
-            <button type="submit" id="auth-submit-btn" class="btn btn-primary">
-              ログイン
-            </button>
-          </form>
-        </div>
-      </div>
-    `;
-
-    // Set up form handlers
-    setupAuthFormHandlers();
+    // Set up form handlers (must be called after elements are in DOM or attached manually here)
+    // Since we are rebuilding DOM, existing event listeners are lost. 
+    // We can call setupAuthFormHandlers() OR attach logic here. 
+    // Let's call setupAuthFormHandlers() but we need to make sure the elements exist in DOM first 
+    // or pass them to the function.
+    // The original code called setupAuthFormHandlers() which looked up by ID.
+    // Since we append to container, they will be in DOM.
+    setTimeout(() => setupAuthFormHandlers(), 0);
   }
 }
 

@@ -204,118 +204,225 @@ function renderReviewSession() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
+  // Clear container
+  container.innerHTML = '';
+
   const narrative = getCurrentNarrative();
   if (!narrative) return;
 
   const progress = getSessionProgress();
   const questionsLines = narrative.recall_test.prompt_ja.split('\n');
 
-  let html = `
-    <div style="margin-bottom: 2rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2 style="margin: 0;">復習</h2>
-        <button class="secondary" onclick="window.endReviewClick()" style="padding: 0.5rem 1rem;">終了</button>
-      </div>
+  // Header Section
+  const headerDiv = document.createElement('div');
+  headerDiv.style.marginBottom = '2rem';
 
-      <div style="background: #0f172a; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-          <span>進捗</span>
-          <span style="font-weight: bold;">${progress.current} / ${progress.total}</span>
-        </div>
-        <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
-          <div style="width: ${progress.percentage}%; height: 100%; background: var(--accent-color); transition: width 0.3s;"></div>
-        </div>
-      </div>
-    </div>
+  const titleRow = document.createElement('div');
+  titleRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;';
+  
+  const title = document.createElement('h2');
+  title.style.margin = '0';
+  title.textContent = '復習';
+  
+  const endBtn = document.createElement('button');
+  endBtn.className = 'secondary';
+  endBtn.style.padding = '0.5rem 1rem';
+  endBtn.textContent = '終了';
+  endBtn.onclick = () => window.endReviewClick();
+  
+  titleRow.append(title, endBtn);
 
-    <div id="flip-card-container" style="perspective: 1000px; margin-bottom: 2rem;">
-      <div style="
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        border: 2px solid var(--accent-color);
-        border-radius: 1rem;
-        padding: 2rem;
-        min-height: 250px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: transform 0.3s;
-        text-align: center;
-      " onclick="window.toggleAnswer()">
+  // Progress Bar
+  const progressContainer = document.createElement('div');
+  progressContainer.style.cssText = 'background: #0f172a; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;';
+  
+  const progressTextRow = document.createElement('div');
+  progressTextRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;';
+  
+  const progressLabel = document.createElement('span');
+  progressLabel.textContent = '進捗';
+  
+  const progressValue = document.createElement('span');
+  progressValue.style.fontWeight = 'bold';
+  progressValue.textContent = `${progress.current} / ${progress.total}`;
+  
+  progressTextRow.append(progressLabel, progressValue);
+  
+  const progressBarBg = document.createElement('div');
+  progressBarBg.style.cssText = 'width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;';
+  
+  const progressBarFill = document.createElement('div');
+  progressBarFill.style.cssText = `width: ${progress.percentage}%; height: 100%; background: var(--accent-color); transition: width 0.3s;`;
+  
+  progressBarBg.appendChild(progressBarFill);
+  progressContainer.append(progressTextRow, progressBarBg);
+  
+  headerDiv.append(titleRow, progressContainer);
+  container.appendChild(headerDiv);
+
+  // Flip Card Container
+  const flipCardContainer = document.createElement('div');
+  flipCardContainer.id = 'flip-card-container';
+  flipCardContainer.style.cssText = 'perspective: 1000px; margin-bottom: 2rem;';
+  
+  const card = document.createElement('div');
+  card.style.cssText = `
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 2px solid var(--accent-color);
+    border-radius: 1rem;
+    padding: 2rem;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s;
+    text-align: center;
   `;
+  card.onclick = () => window.toggleAnswer();
 
   if (!reviewSession.showAnswer) {
     // Front: Japanese prompt
-    html += `
-      <div style="font-size: 1.1rem; color: var(--text-secondary);">
-        <p style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-tertiary);">【問題】</p>
-    `;
-    questionsLines.forEach((line, i) => {
+    const frontContent = document.createElement('div');
+    frontContent.style.cssText = 'font-size: 1.1rem; color: var(--text-secondary); width: 100%;';
+    
+    const label = document.createElement('p');
+    label.style.cssText = 'margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-tertiary);';
+    label.textContent = '【問題】';
+    frontContent.appendChild(label);
+    
+    questionsLines.forEach(line => {
       if (line.trim()) {
-        html += `<p style="margin-bottom: 0.5rem; line-height: 1.6;">${line}</p>`;
+        const p = document.createElement('p');
+        p.style.cssText = 'margin-bottom: 0.5rem; line-height: 1.6;';
+        p.textContent = line;
+        frontContent.appendChild(p);
       }
     });
-    html += `
-        <p style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-tertiary); cursor: pointer;">クリックで答えを表示</p>
-      </div>
-    `;
+    
+    const hint = document.createElement('p');
+    hint.style.cssText = 'margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-tertiary); cursor: pointer;';
+    hint.textContent = 'クリックで答えを表示';
+    frontContent.appendChild(hint);
+    
+    card.appendChild(frontContent);
   } else {
     // Back: English narrative + key phrases
-    html += `
-      <div style="text-align: left; width: 100%;">
-        <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-tertiary);">【正解】</p>
-        <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-          <div style="font-size: 1rem; line-height: 1.8; margin-bottom: 1.5rem;">
-            ${narrative.narrative_en.split(/(?<=[.!?])\s+/).map(s =>
-      `<span style="cursor: pointer; border-bottom: 1px dotted var(--accent-color);" onclick="event.stopPropagation(); window.speak('${s.replace(/'/g, "\\'")}')">${s}</span> `
-    ).join('')}
-          </div>
-
-          <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;"><strong>キーフレーズ:</strong></p>
-            ${narrative.key_phrases.slice(0, 2).map(p =>
-      `<div style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--accent-color);">${p.phrase_en}</div>`
-    ).join('')}
-          </div>
-        </div>
-        <p style="font-size: 0.8rem; color: var(--text-tertiary); cursor: pointer;">クリックで問題に戻る</p>
-      </div>
-    `;
+    const backContent = document.createElement('div');
+    backContent.style.cssText = 'text-align: left; width: 100%;';
+    
+    const label = document.createElement('p');
+    label.style.cssText = 'margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-tertiary);';
+    label.textContent = '【正解】';
+    backContent.appendChild(label);
+    
+    const contentBox = document.createElement('div');
+    contentBox.style.cssText = 'background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;';
+    
+    const narrativeText = document.createElement('div');
+    narrativeText.style.cssText = 'font-size: 1rem; line-height: 1.8; margin-bottom: 1.5rem;';
+    
+    const sentences = narrative.narrative_en.split(/(?<=[.!?])\s+/);
+    sentences.forEach(s => {
+      const span = document.createElement('span');
+      span.style.cssText = 'cursor: pointer; border-bottom: 1px dotted var(--accent-color); margin-right: 4px; display: inline-block;';
+      span.textContent = s;
+      span.onclick = (e) => {
+        e.stopPropagation();
+        window.speak(s);
+      };
+      narrativeText.appendChild(span);
+    });
+    contentBox.appendChild(narrativeText);
+    
+    const keyPhrasesBox = document.createElement('div');
+    keyPhrasesBox.style.cssText = 'border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;';
+    
+    const kpLabel = document.createElement('p');
+    kpLabel.style.cssText = 'font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: bold;';
+    kpLabel.textContent = 'キーフレーズ:';
+    keyPhrasesBox.appendChild(kpLabel);
+    
+    narrative.key_phrases.slice(0, 2).forEach(p => {
+      const div = document.createElement('div');
+      div.style.cssText = 'font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--accent-color);';
+      div.textContent = p.phrase_en;
+      keyPhrasesBox.appendChild(div);
+    });
+    
+    contentBox.appendChild(keyPhrasesBox);
+    backContent.appendChild(contentBox);
+    
+    const backHint = document.createElement('p');
+    backHint.style.cssText = 'font-size: 0.8rem; color: var(--text-tertiary); cursor: pointer;';
+    backHint.textContent = 'クリックで問題に戻る';
+    backContent.appendChild(backHint);
+    
+    card.appendChild(backContent);
   }
+  
+  flipCardContainer.appendChild(card);
+  container.appendChild(flipCardContainer);
 
-  html += `
-      </div>
-    </div>
+  // Rating Buttons
+  const ratingDiv = document.createElement('div');
+  ratingDiv.style.marginBottom = '2rem';
+  
+  const ratingLabel = document.createElement('p');
+  ratingLabel.style.cssText = 'text-align: center; margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);';
+  ratingLabel.textContent = 'どうでしたか？';
+  ratingDiv.appendChild(ratingLabel);
+  
+  const buttonsGrid = document.createElement('div');
+  buttonsGrid.style.cssText = 'display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;';
+  
+  const ratings = [
+    { q: 0, icon: '❌', label: '忘れた', bg: '#7f1d1d', border: '#dc2626' },
+    { q: 1, icon: '😰', label: '難しい', bg: '#713f12', border: '#ea580c' },
+    { q: 2, icon: '👍', label: '良好', bg: '#1e3a8a', border: '#3b82f6' },
+    { q: 3, icon: '🎉', label: '簡単', bg: '#15803d', border: '#22c55e' }
+  ];
+  
+  ratings.forEach(r => {
+    const btn = document.createElement('button');
+    btn.className = 'review-quality';
+    btn.dataset.quality = r.q;
+    btn.style.cssText = `background: ${r.bg}; border: 2px solid ${r.border};`;
+    btn.onclick = () => window.rateReview(r.q);
+    
+    const iconDiv = document.createElement('div');
+    iconDiv.style.fontSize = '1.5rem';
+    iconDiv.textContent = r.icon;
+    
+    const labelDiv = document.createElement('div');
+    labelDiv.style.cssText = 'font-size: 0.75rem; margin-top: 0.5rem;';
+    labelDiv.textContent = r.label;
+    
+    btn.append(iconDiv, labelDiv);
+    buttonsGrid.appendChild(btn);
+  });
+  
+  ratingDiv.appendChild(buttonsGrid);
+  container.appendChild(ratingDiv);
 
-    <div style="margin-bottom: 2rem;">
-      <p style="text-align: center; margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">どうでしたか？</p>
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;">
-        <button class="review-quality" data-quality="0" onclick="window.rateReview(0)" style="background: #7f1d1d; border: 2px solid #dc2626;">
-          <div style="font-size: 1.5rem;">❌</div>
-          <div style="font-size: 0.75rem; margin-top: 0.5rem;">忘れた</div>
-        </button>
-        <button class="review-quality" data-quality="1" onclick="window.rateReview(1)" style="background: #713f12; border: 2px solid #ea580c;">
-          <div style="font-size: 1.5rem;">😰</div>
-          <div style="font-size: 0.75rem; margin-top: 0.5rem;">難しい</div>
-        </button>
-        <button class="review-quality" data-quality="2" onclick="window.rateReview(2)" style="background: #1e3a8a; border: 2px solid #3b82f6;">
-          <div style="font-size: 1.5rem;">👍</div>
-          <div style="font-size: 0.75rem; margin-top: 0.5rem;">良好</div>
-        </button>
-        <button class="review-quality" data-quality="3" onclick="window.rateReview(3)" style="background: #15803d; border: 2px solid #22c55e;">
-          <div style="font-size: 1.5rem;">🎉</div>
-          <div style="font-size: 0.75rem; margin-top: 0.5rem;">簡単</div>
-        </button>
-      </div>
-    </div>
-
-    <div style="display: flex; gap: 1rem;">
-      <button class="secondary" onclick="window.speak()" style="flex: 1;">📢 再生</button>
-      <button class="secondary" onclick="window.showNarrativeDetails()" style="flex: 1;">詳細</button>
-    </div>
-  `;
-
-  container.innerHTML = html;
+  // Bottom Actions
+  const bottomActions = document.createElement('div');
+  bottomActions.style.cssText = 'display: flex; gap: 1rem;';
+  
+  const speakBtn = document.createElement('button');
+  speakBtn.className = 'secondary';
+  speakBtn.style.flex = '1';
+  speakBtn.textContent = '📢 再生';
+  speakBtn.onclick = () => window.speak();
+  
+  const detailBtn = document.createElement('button');
+  detailBtn.className = 'secondary';
+  detailBtn.style.flex = '1';
+  detailBtn.textContent = '詳細';
+  detailBtn.onclick = () => window.showNarrativeDetails();
+  
+  bottomActions.append(speakBtn, detailBtn);
+  container.appendChild(bottomActions);
 }
 
 /**
@@ -324,65 +431,114 @@ function renderReviewSession() {
 async function renderSessionComplete() {
   const container = document.getElementById('result-container');
   if (!container) return;
+  
+  // Clear container
+  container.innerHTML = '';
 
   const summary = getSessionSummary();
   const stats = (await window.storage?.getSRSStats()) || {};
 
-  let html = `
-    <div style="text-align: center; padding: 2rem 0;">
-      <h2 style="margin-bottom: 1.5rem;">💪 今日の復習完了！</h2>
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'text-align: center; padding: 2rem 0;';
+  
+  const h2 = document.createElement('h2');
+  h2.style.marginBottom = '1.5rem';
+  h2.textContent = '💪 今日の復習完了！';
+  wrapper.appendChild(h2);
 
-      <div style="background: #0f172a; padding: 2rem; border-radius: 1rem; margin-bottom: 2rem;">
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
-          <div>
-            <div style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;">⏱️</div>
-            <div style="font-size: 0.9rem; color: var(--text-secondary);">所要時間</div>
-            <div style="font-size: 1.3rem; margin-top: 0.5rem;">${summary.duration_minutes}分</div>
-          </div>
-          <div>
-            <div style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;">📊</div>
-            <div style="font-size: 0.9rem; color: var(--text-secondary);">復習数</div>
-            <div style="font-size: 1.3rem; margin-top: 0.5rem;">${summary.total_reviews}</div>
-          </div>
-        </div>
-
-        <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
-          <p style="margin-bottom: 1rem; color: var(--text-secondary);">成績内訳</p>
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;">
-            <div>
-              <div style="font-size: 1.8rem;">❌</div>
-              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">${summary.ratings_breakdown.forgot}</div>
-            </div>
-            <div>
-              <div style="font-size: 1.8rem;">😰</div>
-              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">${summary.ratings_breakdown.hard}</div>
-            </div>
-            <div>
-              <div style="font-size: 1.8rem;">👍</div>
-              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">${summary.ratings_breakdown.good}</div>
-            </div>
-            <div>
-              <div style="font-size: 1.8rem;">🎉</div>
-              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">${summary.ratings_breakdown.easy}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style="background: rgba(34, 197, 94, 0.1); padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; border: 1px solid rgba(34, 197, 94, 0.3);">
-        <p style="color: #22c55e; margin: 0;">
-          🔥 連続復習 <strong>${stats.current_streak || 0}</strong> 日目
-        </p>
-      </div>
-
-      <div style="display: flex; gap: 1rem;">
-        <button class="primary" onclick="window.goToReviewDashboard()" style="flex: 1;">復習を再開</button>
-        <button class="secondary" onclick="window.goToGenerate()" style="flex: 1;">新規作成</button>
-      </div>
-    </div>
+  const statsBox = document.createElement('div');
+  statsBox.style.cssText = 'background: #0f172a; padding: 2rem; border-radius: 1rem; margin-bottom: 2rem;';
+  
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;';
+  
+  const timeStat = document.createElement('div');
+  timeStat.innerHTML = `
+    <div style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;">⏱️</div>
+    <div style="font-size: 0.9rem; color: var(--text-secondary);">所要時間</div>
+    <div style="font-size: 1.3rem; margin-top: 0.5rem;">${summary.duration_minutes}分</div>
   `;
+  // Using innerHTML here for static structure is okay, but let's be safe and consistent with textContent for values
+  // Refactoring innerHTML above to be safe:
+  timeStat.innerHTML = '';
+  const tsIcon = document.createElement('div'); tsIcon.style.cssText = 'font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;'; tsIcon.textContent = '⏱️';
+  const tsLabel = document.createElement('div'); tsLabel.style.cssText = 'font-size: 0.9rem; color: var(--text-secondary);'; tsLabel.textContent = '所要時間';
+  const tsValue = document.createElement('div'); tsValue.style.cssText = 'font-size: 1.3rem; margin-top: 0.5rem;'; tsValue.textContent = `${summary.duration_minutes}分`;
+  timeStat.append(tsIcon, tsLabel, tsValue);
 
-  container.innerHTML = html;
+  const countStat = document.createElement('div');
+  const csIcon = document.createElement('div'); csIcon.style.cssText = 'font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;'; csIcon.textContent = '📊';
+  const csLabel = document.createElement('div'); csLabel.style.cssText = 'font-size: 0.9rem; color: var(--text-secondary);'; csLabel.textContent = '復習数';
+  const csValue = document.createElement('div'); csValue.style.cssText = 'font-size: 1.3rem; margin-top: 0.5rem;'; csValue.textContent = summary.total_reviews;
+  countStat.append(csIcon, csLabel, csValue);
+  
+  grid.append(timeStat, countStat);
+  statsBox.appendChild(grid);
+  
+  const breakdownDiv = document.createElement('div');
+  breakdownDiv.style.cssText = 'border-top: 1px solid var(--border-color); padding-top: 1.5rem;';
+  
+  const bdLabel = document.createElement('p');
+  bdLabel.style.cssText = 'margin-bottom: 1rem; color: var(--text-secondary);';
+  bdLabel.textContent = '成績内訳';
+  breakdownDiv.appendChild(bdLabel);
+  
+  const bdGrid = document.createElement('div');
+  bdGrid.style.cssText = 'display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;';
+  
+  const bdItems = [
+    { icon: '❌', val: summary.ratings_breakdown.forgot },
+    { icon: '😰', val: summary.ratings_breakdown.hard },
+    { icon: '👍', val: summary.ratings_breakdown.good },
+    { icon: '🎉', val: summary.ratings_breakdown.easy }
+  ];
+  
+  bdItems.forEach(item => {
+    const div = document.createElement('div');
+    const icon = document.createElement('div'); icon.style.fontSize = '1.8rem'; icon.textContent = item.icon;
+    const val = document.createElement('div'); val.style.cssText = 'font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;'; val.textContent = item.val;
+    div.append(icon, val);
+    bdGrid.appendChild(div);
+  });
+  
+  breakdownDiv.appendChild(bdGrid);
+  statsBox.appendChild(breakdownDiv);
+  wrapper.appendChild(statsBox);
+  
+  const streakBox = document.createElement('div');
+  streakBox.style.cssText = 'background: rgba(34, 197, 94, 0.1); padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; border: 1px solid rgba(34, 197, 94, 0.3);';
+  const streakP = document.createElement('p');
+  streakP.style.cssText = 'color: #22c55e; margin: 0;';
+  
+  // "🔥 連続復習 <strong>${stats.current_streak || 0}</strong> 日目"
+  const fireText = document.createTextNode('🔥 連続復習 ');
+  const strong = document.createElement('strong');
+  strong.textContent = stats.current_streak || 0;
+  const dayText = document.createTextNode(' 日目');
+  
+  streakP.append(fireText, strong, dayText);
+  streakBox.appendChild(streakP);
+  wrapper.appendChild(streakBox);
+  
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display: flex; gap: 1rem;';
+  
+  const restartBtn = document.createElement('button');
+  restartBtn.className = 'primary';
+  restartBtn.style.flex = '1';
+  restartBtn.textContent = '復習を再開';
+  restartBtn.onclick = () => window.goToReviewDashboard();
+  
+  const newBtn = document.createElement('button');
+  newBtn.className = 'secondary';
+  newBtn.style.flex = '1';
+  newBtn.textContent = '新規作成';
+  newBtn.onclick = () => window.goToGenerate();
+  
+  btnRow.append(restartBtn, newBtn);
+  wrapper.appendChild(btnRow);
+  
+  container.appendChild(wrapper);
 }
 
 /**
