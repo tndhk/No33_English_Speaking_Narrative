@@ -86,14 +86,67 @@ function initializeApp() {
     window.updateNavigation();
 }
 
-function renderStep() {
+// Helper to get narratives created today
+async function getTodayCount() {
+    const narratives = (await window.storage?.getAllNarratives()) || [];
+    const todayStr = new Date().toLocaleDateString('ja-JP').split('/').join('-'); // YYYY-MM-DD
+    // Note: dates in DB are ISO strings (YYYY-MM-DD...)
+    // Simple check: create a date string for today and check start of created_at
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const prefix = `${y}-${m}-${d}`;
+
+    return narratives.filter(n => n.created_at.startsWith(prefix)).length;
+}
+
+// Helper to format category for display
+function formatCategory(cat) {
+    const map = {
+        'today': '📝 日々の記録',
+        'thoughts': '💭 思考メモ',
+        'omakase': '✨ 自由記述'
+    };
+    return map[cat] || cat;
+}
+
+async function renderStep() {
     const container = document.getElementById('step-content');
     const wizard = document.getElementById('wizard-container');
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
 
     container.innerHTML = '';
+
+    // Check daily limit at step 0
+    if (state.step === 0) {
+        const count = await getTodayCount();
+        const DAILY_LIMIT = 1;
+
+        if (count >= DAILY_LIMIT) {
+            container.classList.remove('view-enter');
+            void container.offsetWidth;
+            container.classList.add('view-enter');
+
+            container.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
+                    <h2>今日の記録は完了しました</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                        日記は1日1回までです。<br>また明日、新しい思い出を記録しましょう。
+                    </p>
+                    <button class="secondary" onclick="window.switchView('review')">振り返りを行う</button>
+                </div>
+             `;
+            nextBtn.style.display = 'none';
+            prevBtn.style.display = 'none';
+            return;
+        }
+    }
+
     prevBtn.style.display = state.step > 0 ? 'inline-block' : 'none';
+    nextBtn.style.display = 'inline-block'; // Ensure next button is shown otherwise
 
     // Trigger animation for new step content
     container.classList.remove('view-enter');
@@ -149,9 +202,10 @@ function renderQuestionForm(container) {
         textarea.style.borderRadius = '0.5rem';
         textarea.style.background = '#0f172a';
         textarea.style.border = '1px solid var(--border-color)';
-        textarea.style.color = '#fff';
+        textarea.style.color = 'white';
+        textarea.style.resize = 'vertical';
         textarea.style.minHeight = '80px';
-        textarea.value = state.answers[i] || '';
+        textarea.value = state.answers[i] || ''; // Restore answer if available
 
         group.appendChild(label);
         group.appendChild(textarea);
@@ -160,28 +214,41 @@ function renderQuestionForm(container) {
 }
 
 function renderOutputSettings(container) {
-    container.innerHTML = '<h2>出力の設定</h2>';
+    container.innerHTML = '<h2>出力設定</h2>';
 
-    const settingsHtml = `
-        <div style="margin-bottom:1.5rem">
-            <label style="display:block; margin-bottom:0.5rem">長さ</label>
-            <div class="option-list">
-                ${['Short', 'Normal', 'Long'].map(l => `<div class="option-item ${state.settings.length === l ? 'selected' : ''}" onclick="window.updateSetting('length', '${l}')">${l}</div>`).join('')}
-            </div>
-        </div>
-        <div style="margin-bottom:1.5rem">
-            <label style="display:block; margin-bottom:0.5rem">トーン</label>
-            <div class="option-list">
-                ${['Casual', 'Business', 'Formal'].map(t => `<div class="option-item ${state.settings.tone === t ? 'selected' : ''}" onclick="window.updateSetting('tone', '${t}')">${t}</div>`).join('')}
-            </div>
-        </div>
-        <div style="margin-bottom:1.5rem">
-            <label style="display:block; margin-bottom:0.5rem">読み上げ速度: ${state.settings.rate}</label>
-            <input type="range" min="0.5" max="1.5" step="0.1" value="${state.settings.rate}" 
-                   onchange="window.updateSetting('rate', parseFloat(this.value))" style="width:100%">
+    // Length setting
+    const lengthGroup = document.createElement('div');
+    lengthGroup.style.marginBottom = '1.5rem';
+    lengthGroup.innerHTML = `
+        <label style="display:block; margin-bottom:0.5rem;">長さ</label>
+        <div class="option-list" style="grid-template-columns: repeat(3, 1fr);">
+            ${['Short', 'Normal', 'Long'].map(l => `
+                <div class="option-item ${state.settings.length === l ? 'selected' : ''}" 
+                     onclick="selectSetting(this, 'length', '${l}')"
+                     style="text-align:center; padding: 0.75rem;">
+                    ${l}
+                </div>
+            `).join('')}
         </div>
     `;
-    container.innerHTML += settingsHtml;
+    container.appendChild(lengthGroup);
+
+    // Tone setting
+    const toneGroup = document.createElement('div');
+    toneGroup.style.marginBottom = '1.5rem';
+    toneGroup.innerHTML = `
+        <label style="display:block; margin-bottom:0.5rem;">トーン</label>
+        <div class="option-list" style="grid-template-columns: repeat(3, 1fr);">
+            ${['Casual', 'Business', 'Academic'].map(t => `
+                <div class="option-item ${state.settings.tone === t ? 'selected' : ''}" 
+                     onclick="selectSetting(this, 'tone', '${t}')"
+                     style="text-align:center; padding: 0.75rem;">
+                    ${t}
+                </div>
+            `).join('')}
+        </div>
+    `;
+    container.appendChild(toneGroup);
 }
 
 window.updateSetting = (key, val) => {
@@ -189,14 +256,20 @@ window.updateSetting = (key, val) => {
     renderStep();
 };
 
-async function handleNext() {
-    if (state.step === 0 && !state.category) {
-        alert('カテゴリを選択してください');
-        return;
-    }
+window.selectSetting = (el, type, value) => {
+    state.settings[type] = value;
+    el.parentElement.querySelectorAll('.option-item').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+};
 
-    if (state.step === 1) {
-        const textareas = document.querySelectorAll('textarea');
+async function handleNext() {
+    if (state.step === 0) {
+        if (!state.category) {
+            alert('カテゴリを選択してください');
+            return;
+        }
+    } else if (state.step === 1) {
+        const textareas = document.getElementById('step-content').querySelectorAll('textarea');
         state.answers = Array.from(textareas).map(ta => ta.value);
         if (state.answers.some(a => !a.trim())) {
             alert('すべての質問に答えてください（短くてもOKです）');
@@ -278,20 +351,66 @@ function renderResult() {
     void result.offsetWidth;
     result.classList.add('view-enter');
 
-    // Clear previous content
-    result.innerHTML = '';
+    // Format category nicely
+    const displayCategory = formatCategory(data.category);
 
-    const h2 = document.createElement('h2');
-    h2.textContent = 'Your English Journal Entry';
-    result.appendChild(h2);
+    const html = `
+        <h2 style="margin-bottom: 0.5rem;">${displayCategory}</h2>
+        <div style="color: var(--text-secondary); margin-bottom: 2rem;">${new Date().toLocaleDateString('ja-JP')}</div>
+        
+        <div class="result-grid">
+            <!-- Narrative (Main) -->
+            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h3>📖 Generated Narrative</h3>
+                     <div style="display:flex; gap:0.5rem;">
+                        <button class="icon-btn" onclick="window.speakText(document.querySelector('.editable-narrative').value)">🔊 Play</button>
+                    </div>
+                </div>
+                <textarea class="editable-narrative" style="width:100%; min-height:200px; background:transparent; border:none; color:inherit; font-size:1.1rem; line-height:1.6; resize:vertical; padding:0.5rem;"></textarea>
+            </div>
 
-    // Narrative Box (Editable)
-    const narrativeBox = document.createElement('div');
-    narrativeBox.className = 'narrative-box';
+            <!-- Key Phrases -->
+            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color);">
+                <h3>🔑 Key Phrases</h3>
+                <ul style="list-style:none; padding:0; margin-top:1rem;">
+                    ${data.key_phrases.map(p => `
+                        <li style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color)">
+                            <div style="font-weight:600; color:var(--accent-color); margin-bottom:0.25rem;">${p.phrase_en}</div>
+                            <div style="font-size:0.9rem; margin-bottom:0.25rem;">${p.meaning_ja}</div>
+                            <div style="font-size:0.8rem; color:var(--text-secondary);">${p.usage_hint_ja}</div>
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
 
-    const textarea = document.createElement('textarea');
-    textarea.className = 'editable-narrative';
-    textarea.style.cssText = 'width:100%; min-height:200px; background:transparent; border:none; color:inherit; font-size:1.1rem; line-height:1.6; resize:vertical; padding:0.5rem;';
+            <!-- Recall Test -->
+            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color);">
+                <h3>🧠 Recall Test</h3>
+                <p style="color:var(--text-secondary); margin-bottom:1rem;">次の要点を英語で言ってみましょう：</p>
+                <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:0.5rem;">
+                    ${data.recall_test.prompt_ja}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex; gap:1rem; margin-top:2rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+            <button class="primary" style="flex:1;" onclick="window.saveNarrativeForReview()">💾 Save to Journal</button>
+            <button class="secondary" style="flex:1;" onclick="window.copy()">📋 Copy</button>
+            <button class="secondary" style="flex:1;" onclick="window.download()">⬇️ JSON</button>
+        </div>
+
+        <!-- Bottom Actions -->
+        <div style="display:flex; gap:1rem;">
+            <button class="secondary" style="flex:1;" onclick="window.newNarrative()">✨ New Entry</button>
+            <button class="secondary" style="flex:1;" onclick="window.switchView('review')">📚 Review Dashboard</button>
+        </div>
+    `;
+    result.innerHTML = html;
+
+    // Populate textarea after innerHTML is set
+    const textarea = result.querySelector('.editable-narrative');
     textarea.value = data.narrative_en;
 
     // Update state on change

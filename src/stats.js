@@ -9,6 +9,16 @@
 /**
  * Render review dashboard (main review entry point)
  */
+// Helper to format category for display (Duplicate from main.js for now, better to move to utility)
+function formatCategory(cat) {
+  const map = {
+    'today': '📝 日々の記録',
+    'thoughts': '💭 思考メモ',
+    'omakase': '✨ 自由記述'
+  };
+  return map[cat] || cat;
+}
+
 /**
  * Render review dashboard (main review entry point)
  */
@@ -61,7 +71,7 @@ async function renderReviewDashboard() {
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; margin-top: 0.5rem;">
                 <span style="font-size: 1.1rem; font-weight: bold; color: var(--text-primary);">${dateStr}</span>
                 <span style="font-size: 0.9rem; color: var(--text-secondary); text-transform: capitalize; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px;">
-                    ${featuredNarrative.category}
+                    ${formatCategory(featuredNarrative.category)}
                 </span>
             </div>
             
@@ -141,6 +151,9 @@ async function renderReviewDashboard() {
 /**
  * Render detailed statistics screen
  */
+/**
+ * Render detailed statistics screen
+ */
 async function renderStatsPage() {
   const container = document.getElementById('result-container');
   if (!container) return;
@@ -198,11 +211,12 @@ async function renderStatsPage() {
   Object.entries(byCategory).forEach(([cat, counts]) => {
     const total = counts.total;
     const masteredPct = (counts.mastered / total * 100).toFixed(0);
+    const displayCat = formatCategory(cat);
 
     html += `
       <div style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-          <strong>${cat}</strong>
+          <strong>${displayCat}</strong>
           <span style="font-size: 0.9rem; color: var(--text-secondary);">${counts.total} 件</span>
         </div>
         <div style="display: flex; height: 24px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.05); margin-bottom: 0.5rem;">
@@ -242,10 +256,11 @@ async function renderStatsPage() {
       estimates.forEach(e => {
         const date = new Date(e.date);
         const daysAway = Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24));
+        const displayCat = formatCategory(e.category);
 
         html += `
           <div style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
-            <span>${e.category}</span>
+            <span>${displayCat}</span>
             <span style="color: ${daysAway <= 7 ? '#fbbf24' : '#60a5fa'};">${date.toLocaleDateString('ja-JP')} (${daysAway}日後)</span>
           </div>
         `;
@@ -314,8 +329,8 @@ async function renderHistoryPage() {
     </div>
     
     <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-        <button class="secondary" onclick="window.goToReviewDashboard()" style="flex: 1;">← 復習</button>
-        <button class="secondary" onclick="window.goToGenerate()" style="flex: 1;">✍️ 新規作成</button>
+        <button class="secondary" onclick="window.goToReviewDashboard()" style="flex: 1;">← 戻る</button>
+        <button class="secondary" onclick="window.goToGenerate()" style="flex: 1;">✍️ 書く</button>
     </div>
   `;
 
@@ -425,7 +440,7 @@ window.selectDate = (dateStr) => {
     const el = document.createElement('div');
     el.style.cssText = 'background: #1e293b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 3px solid var(--accent-color);';
     el.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 0.5rem;">${n.category}</div>
+            <div style="font-weight: bold; margin-bottom: 0.5rem;">${formatCategory(n.category)}</div>
             <div style="margin-bottom: 0.5rem; white-space: pre-wrap;">${n.narrative_en}</div>
             <button class="secondary" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;" onclick="window.viewNarrativeDetails('${n.id}')">Details</button>
         `;
