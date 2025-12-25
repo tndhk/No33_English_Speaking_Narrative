@@ -73,10 +73,10 @@ CREATE POLICY "Users can delete own stats"
 ALTER TABLE user_stats ENABLE ROW LEVEL SECURITY;
 
 -- Step 9: Create a function to automatically create user_stats record on first login
-CREATE OR REPLACE FUNCTION create_user_stats()
+CREATE OR REPLACE FUNCTION public.create_user_stats()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO user_stats (user_id, updated_at, total_reviews, current_streak, longest_streak, reviews_by_date)
+  INSERT INTO public.user_stats (user_id, updated_at, total_reviews, current_streak, longest_streak, reviews_by_date)
   VALUES (NEW.id, NOW(), 0, 0, 0, '{}'::jsonb)
   ON CONFLICT (user_id) DO NOTHING;
   RETURN NEW;
