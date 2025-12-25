@@ -1,6 +1,7 @@
+/**
  * Review Session Module - Manages review sessions and user interactions
-  * Handles loading journal entries, tracking progress, and recording ratings
-    */
+ * Handles loading journal entries, tracking progress, and recording ratings
+ */
 
 const reviewSession = {
   narratives: [],

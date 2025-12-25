@@ -343,6 +343,15 @@ async function generateWithFallback(systemPrompt, env, settings = {}) {
 export async function onRequestPost(context) {
   const { request, env } = context;
 
+  // Check for critical variables
+  if (!env.GEMINI_API_KEY && !env.DEEPSEEK_API_KEY) {
+    console.error("Missing GEMINI_API_KEY and DEEPSEEK_API_KEY");
+    return new Response(JSON.stringify({ error: "Server Configuration Error: Missing API Keys" }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
   // --- Authentication Check ---
   const authHeader = request.headers.get('Authorization');
   if (!authHeader) {

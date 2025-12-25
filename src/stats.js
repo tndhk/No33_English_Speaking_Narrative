@@ -243,7 +243,7 @@ async function renderStatsPage() {
     const estimates = narratives
       .filter(n => n.srs?.status !== 'mastered')
       .map(n => ({
-        date: window.srs?.estimateMasteryDate(n.id),
+        date: window.srs?.estimateMasteryDate(n),
         category: n.category
       }))
       .filter(e => e.date)

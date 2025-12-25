@@ -364,7 +364,7 @@ function getQualityBreakdown(narrative) {
  * @returns {string} Estimated mastery date (YYYY-MM-DD)
  */
 function estimateMasteryDate(narrative) {
-  if (!narrative) return null;
+  if (!narrative || !narrative.srs || !narrative.srs.quality_history) return null;
 
   const { interval_index, quality_history } = narrative.srs;
   if (interval_index >= SRS_INTERVALS.length - 1) {
