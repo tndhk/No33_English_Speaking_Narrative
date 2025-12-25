@@ -18,7 +18,6 @@
     "vitest": "^4.0.16"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.89.0",
-    "ajv": "^8.14.0"
+    "@supabase/supabase-js": "^2.89.0"
   }
 }

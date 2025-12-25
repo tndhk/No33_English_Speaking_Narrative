@@ -1,5 +1,4 @@
 name = "no33-english-speaking-narrative"
-main = "src/index.ts"
 workers_dev = true
 routes = []
 

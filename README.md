@@ -65,18 +65,29 @@
    起動後、コンソールに表示される `API URL` と `anon key` を確認してください。
 
 2. 環境変数ファイルを作成
-   `.env` ファイルをプロジェクトルートに作成し、以下を設定します。
+
+   **フロントエンド用 (.env):**
    ```text
+   VITE_SUPABASE_URL=http://127.0.0.1:54321
+   VITE_SUPABASE_ANON_KEY=<anon key from supabase start>
+   ```
+
+   **バックエンド用 (.dev.vars):**
+   Cloudflare Workers (Backend) 用の API キーなどを設定します。
+   ```text
+   GEMINI_API_KEY=your_gemini_api_key
+   DEEPSEEK_API_KEY=your_deepseek_api_key
    VITE_SUPABASE_URL=http://127.0.0.1:54321
    VITE_SUPABASE_ANON_KEY=<anon key from supabase start>
    ```
 
 3. 開発サーバーを起動
    ```bash
-   npm run dev
+   # フロントエンドとバックエンドを同時に起動
+   npm run dev:full
    ```
 
-4. ブラウザで `http://localhost:5173` にアクセス
+4. ブラウザで `http://localhost:8788` にアクセス
 
 ### その他の便利なコマンド
 
@@ -90,6 +101,9 @@ npx supabase stop
 # データベースのリセット（マイグレーション再実行）
 npx supabase db reset
 ```
+
+> [!TIP]
+> `npx supabase db reset` を実行するとユーザーデータが全消去されるため、ブラウザに残っているログインセッションが無効になります。リセット後は一度ログアウトし、再度新規登録を行ってください。
 
 ### ユーザー認証の設定
 
