@@ -681,6 +681,43 @@ input[type="password"]:focus {
     background: rgba(255, 255, 255, 0.05);
 }
 
+.btn-google {
+    background: #fff;
+    color: #1f1f1f;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-google:hover {
+    background: #f8f8f8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.auth-divider span {
+    padding: 0 0.75rem;
+}
+
 @media (max-width: 480px) {
     body {
         padding: 1rem;
