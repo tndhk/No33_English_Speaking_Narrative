@@ -6,6 +6,12 @@
 /**
  * Render review dashboard (main review entry point)
  */
+/**
+ * Render review dashboard (main review entry point)
+ */
+/**
+ * Render review dashboard (main review entry point)
+ */
 async function renderReviewDashboard() {
   const container = document.getElementById('result-container');
   if (!container) return;
@@ -16,134 +22,116 @@ async function renderReviewDashboard() {
   container.classList.add('view-enter');
 
   const dueToday = (await window.storage?.getNarrativesDueToday()) || [];
-  const upcoming = (await window.storage?.getNarrativesUpcoming(7)) || [];
   const stats = (await window.storage?.getSRSStats()) || {};
-
-  // SRS Stats needs narratives to calculate review statistics
-  // Or we can rely on what we have. window.srs.getReviewStatistics likely takes narratives or uses storage internally.
-  // Assuming window.srs.getReviewStatistics is sync but expects narratives logic, let's see srs.js later.
-  // For now, let's fetch all narratives to pass to srs helpers if needed or assuming they are stateless helpers.
   const narratives = (await window.storage?.getAllNarratives()) || [];
-  const srsStats = window.srs?.getReviewStatistics(narratives) || {};
+
+  // Pick a "Featured Memory" (e.g., from exactly 1 year ago, or just random)
+  let featuredTitle = "";
+  let featuredNarrative = null;
+
+  if (narratives.length > 0) {
+    if (dueToday.length > 0) {
+      // If there are reviews due, pick the first one
+      featuredNarrative = dueToday[0];
+      featuredTitle = "覚えていますか？";
+    } else {
+      // Random memory
+      const idx = Math.floor(Math.random() * narratives.length);
+      featuredNarrative = narratives[idx];
+      featuredTitle = "思い出の1ページ";
+    }
+  }
 
   let html = `
-    <h2>📚 復習ダッシュボード</h2>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <h2>📖 My Journal</h2>
+    
+    <div style="margin-bottom: 2rem;">
+        <h3 style="font-weight: normal; color: var(--text-secondary); margin-bottom: 1.5rem;">👋 おかえりなさい</h3>
   `;
 
-  // Due today card
-  html += `
-    <div style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 1.5rem; border-radius: 1rem; color: white;">
-      <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">今日の復習</div>
-      <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">${dueToday.length}</div>
-      <div style="font-size: 0.85rem; opacity: 0.8;">件</div>
-    </div>
-  `;
-
-  // Streak card
-  html += `
-    <div style="background: linear-gradient(135deg, #22c55e 0%, #15803d 100%); padding: 1.5rem; border-radius: 1rem; color: white;">
-      <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">連続日数</div>
-      <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">🔥 ${stats.current_streak || 0}</div>
-      <div style="font-size: 0.85rem; opacity: 0.8;">最長: ${stats.longest_streak || 0} 日</div>
-    </div>
-  `;
-
-  // Total reviews card
-  html += `
-    <div style="background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%); padding: 1.5rem; border-radius: 1rem; color: white;">
-      <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">累計復習数</div>
-      <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">${stats.total_reviews || 0}</div>
-      <div style="font-size: 0.85rem; opacity: 0.8;">回</div>
-    </div>
-  `;
-
-  // Accuracy card
-  html += `
-    <div style="background: linear-gradient(135deg, #f59e0b 0%, #92400e 100%); padding: 1.5rem; border-radius: 1rem; color: white;">
-      <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">正答率</div>
-      <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">${srsStats.accuracy_rate || '0'}%</div>
-      <div style="font-size: 0.85rem; opacity: 0.8;">平均</div>
-    </div>
-  `;
-
-  html += '</div>';
-
-  // Status breakdown
-  html += `
-    <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
-      <h3 style="margin-top: 0;">ナラティブの状況</h3>
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-        <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">新規</div>
-          <div style="font-size: 1.8rem; color: #60a5fa;">${srsStats.new}</div>
-        </div>
-        <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">学習中</div>
-          <div style="font-size: 1.8rem; color: #fbbf24;">${srsStats.learning}</div>
-        </div>
-        <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">修得済</div>
-          <div style="font-size: 1.8rem; color: #4ade80;">${srsStats.mastered}</div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Start review button
-  if (dueToday.length > 0) {
+  // Featured Memory Card
+  if (featuredNarrative) {
+    const dateStr = new Date(featuredNarrative.created_at).toLocaleDateString('ja-JP');
     html += `
-      <button class="primary" onclick="window.startReview()" style="width: 100%; padding: 1.5rem; font-size: 1.1rem; margin-bottom: 1.5rem;">
-        復習を開始（${dueToday.length}件）
-      </button>
-    `;
-  } else {
-    html += `
-      <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); padding: 1.5rem; border-radius: 1rem; text-align: center; margin-bottom: 1.5rem;">
-        <p style="margin: 0; color: #4ade80;">🎉 今日の復習はすべて完了です！</p>
-      </div>
-    `;
-  }
-
-  // Upcoming section
-  if (upcoming.length > 0) {
-    html += `
-      <h3>今後の復習（7日以内）</h3>
-      <div style="background: #0f172a; padding: 1rem; border-radius: 1rem; margin-bottom: 2rem;">
-    `;
-
-    upcoming.slice(0, 5).forEach(n => {
-      const daysLeft = window.srs?.daysUntilReview(n.srs.next_review_date) || 0;
-      const dateStr = new Date(n.srs.next_review_date).toLocaleDateString('ja-JP');
-
-      html += `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
-          <div>
-            <div style="font-size: 0.9rem; color: var(--text-secondary);">${n.category}</div>
-            <div style="font-size: 0.85rem; color: var(--text-secondary);">${n.narrative_en.substring(0, 50)}...</div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 0.85rem; color: var(--accent-color);">${dateStr}</div>
-            <div style="font-size: 0.75rem; color: var(--text-tertiary);">${daysLeft + 1}日後</div>
-          </div>
+        <div class="narrative-card" style="position: relative; background: #1e293b; padding: 2rem; border-radius: 1rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+            <div style="position: absolute; top: -12px; left: 24px; background: var(--accent-color); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                ${featuredTitle}
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; margin-top: 0.5rem;">
+                <span style="font-size: 1.1rem; font-weight: bold; color: var(--text-primary);">${dateStr}</span>
+                <span style="font-size: 0.9rem; color: var(--text-secondary); text-transform: capitalize; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px;">
+                    ${featuredNarrative.category}
+                </span>
+            </div>
+            
+            <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; line-height: 1.8; color: var(--text-primary); margin-bottom: 1rem; font-style: italic;">
+                "${featuredNarrative.narrative_en.substring(0, 120)}${featuredNarrative.narrative_en.length > 120 ? '...' : ''}"
+            </div>
         </div>
       `;
-    });
-
-    if (upcoming.length > 5) {
-      html += `<div style="padding: 0.75rem 0; color: var(--text-secondary);">他 ${upcoming.length - 5} 件</div>`;
-    }
-
-    html += '</div>';
+  } else {
+    html += `
+        <div style="padding: 3rem 2rem; text-align: center; border: 2px dashed var(--border-color); border-radius: 1rem; margin-bottom: 2rem;">
+            <p style="margin-bottom: 1.5rem; font-size: 1.1rem;">まだ日記がありません。<br>今日から思い出を記録し始めましょう。</p>
+            <button class="primary" onclick="window.goToGenerate()">最初の1ページを書く</button>
+        </div>
+      `;
   }
+
+  // Action Button (Review)
+  if (dueToday.length > 0) {
+    html += `
+      <div style="text-align: center;">
+          <button class="primary" onclick="window.startReview()" style="width: 100%; padding: 1.25rem; font-size: 1.1rem; margin-bottom: 1rem; border-radius: 1rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+            ✨ この日記を読み返す (${dueToday.length}件)
+          </button>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 2rem;">
+            当時の気持ちや表現を、もう一度味わってみましょう。
+          </p>
+      </div>
+    `;
+  } else {
+    if (featuredNarrative) {
+      html += `
+          <div style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">
+            <p>🎉 今日の振り返りは完了しています</p>
+            <button class="secondary" onclick="window.startReview()" style="margin-top:0.5rem;">自由に読み返す</button>
+          </div>
+        `;
+    }
+  }
+
+  html += '</div>'; // End Hero Section
+
+  // Simple Stats (Bottom, subtle)
+  html += `
+    <div style="border-top: 1px solid var(--border-color); padding-top: 2rem; margin-bottom: 1rem;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+            <div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);">${stats.current_streak || 0}</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">続けた日数</div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);">${narratives.length}</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">思い出の数</div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);">${stats.total_reviews || 0}</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">読んだ回数</div>
+            </div>
+        </div>
+    </div>
+  `;
+
+  // NOTE: Removed "Upcoming" section completely to simplify the UI
 
   // Navigation buttons
   html += `
-    <div style="display: flex; gap: 1rem;">
-      <button class="secondary" onclick="window.goToHistory()" style="flex: 1;">📋 履歴を見る</button>
-      <button class="secondary" onclick="window.goToStats()" style="flex: 1;">📊 詳細統計</button>
-      <button class="secondary" onclick="window.goToGenerate()" style="flex: 1;">✍️ 新規作成</button>
+    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+      <button class="secondary" onclick="window.goToHistory()" style="flex: 1;">📅 カレンダー</button>
+      <button class="secondary" onclick="window.goToStats()" style="flex: 1;">📊 データ</button>
+      <button class="secondary" onclick="window.goToGenerate()" style="flex: 1;">✍️ 書く</button>
     </div>
   `;
 
@@ -180,30 +168,30 @@ async function renderStatsPage() {
   });
 
   let html = `
-    <h2>📊 学習統計</h2>
+    <h2>📊 ジャーナルデータ</h2>
 
     <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
         <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">総ナラティブ数</div>
+          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">書いた日記</div>
           <div style="font-size: 2rem; font-weight: bold;">${srsStats.total}</div>
         </div>
         <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">累計復習回数</div>
+          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">振り返り回数</div>
           <div style="font-size: 2rem; font-weight: bold;">${stats.total_reviews || 0}</div>
         </div>
         <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">最長連続日数</div>
+          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">続けた日数</div>
           <div style="font-size: 2rem; font-weight: bold;">${stats.longest_streak || 0} 日</div>
         </div>
         <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">平均正答率</div>
+          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">記憶定着率</div>
           <div style="font-size: 2rem; font-weight: bold;">${srsStats.accuracy_rate || '0'}%</div>
         </div>
       </div>
     </div>
 
-    <h3>カテゴリ別進捗</h3>
+    <h3>カテゴリ別の記録</h3>
     <div style="background: #0f172a; padding: 1rem; border-radius: 1rem; margin-bottom: 2rem;">
   `;
 
@@ -218,14 +206,14 @@ async function renderStatsPage() {
           <span style="font-size: 0.9rem; color: var(--text-secondary);">${counts.total} 件</span>
         </div>
         <div style="display: flex; height: 24px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.05); margin-bottom: 0.5rem;">
-          <div style="flex: ${counts.new}; background: #60a5fa;" title="新規: ${counts.new}"></div>
-          <div style="flex: ${counts.learning}; background: #fbbf24;" title="学習中: ${counts.learning}"></div>
-          <div style="flex: ${counts.mastered}; background: #4ade80;" title="修得済: ${counts.mastered}"></div>
+          <div style="flex: ${counts.new}; background: #60a5fa;" title="初回: ${counts.new}"></div>
+          <div style="flex: ${counts.learning}; background: #fbbf24;" title="記憶中: ${counts.learning}"></div>
+          <div style="flex: ${counts.mastered}; background: #4ade80;" title="定着済: ${counts.mastered}"></div>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary);">
-          <span>新規: ${counts.new}</span>
-          <span>学習中: ${counts.learning}</span>
-          <span style="color: #4ade80;">修得済: ${counts.mastered} (${masteredPct}%)</span>
+          <span>初回: ${counts.new}</span>
+          <span>記憶中: ${counts.learning}</span>
+          <span style="color: #4ade80;">定着済: ${counts.mastered} (${masteredPct}%)</span>
         </div>
       </div>
     `;
@@ -236,7 +224,7 @@ async function renderStatsPage() {
   // Mastery timeline
   if (narratives.length > 0) {
     html += `
-      <h3>修得予定日</h3>
+      <h3>次の振り返り予定</h3>
       <div style="background: #0f172a; padding: 1rem; border-radius: 1rem; margin-bottom: 2rem;">
     `;
 
@@ -263,7 +251,7 @@ async function renderStatsPage() {
         `;
       });
     } else {
-      html += '<p style="color: var(--text-secondary); margin: 0;">修得予定のナラティブはありません</p>';
+      html += '<p style="color: var(--text-secondary); margin: 0;">次の振り返り予定はありません</p>';
     }
 
     html += '</div>';
