@@ -10,6 +10,11 @@ async function renderReviewDashboard() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
+  // Trigger animation
+  container.classList.remove('view-enter');
+  void container.offsetWidth;
+  container.classList.add('view-enter');
+
   const dueToday = (await window.storage?.getNarrativesDueToday()) || [];
   const upcoming = (await window.storage?.getNarrativesUpcoming(7)) || [];
   const stats = (await window.storage?.getSRSStats()) || {};
@@ -152,6 +157,11 @@ async function renderStatsPage() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
+  // Trigger animation
+  container.classList.remove('view-enter');
+  void container.offsetWidth;
+  container.classList.add('view-enter');
+
   const narratives = (await window.storage?.getAllNarratives()) || [];
   const stats = (await window.storage?.getSRSStats()) || {};
   const srsStats = window.srs?.getReviewStatistics(narratives) || {};
@@ -272,6 +282,11 @@ async function renderStatsPage() {
 async function renderHistoryPage() {
   const container = document.getElementById('result-container');
   if (!container) return;
+
+  // Trigger animation
+  container.classList.remove('view-enter');
+  void container.offsetWidth;
+  container.classList.add('view-enter');
 
   const narratives = (await window.storage?.getAllNarratives()) || [];
 

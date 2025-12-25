@@ -207,6 +207,11 @@ function renderReviewSession() {
   // Clear container
   container.innerHTML = '';
 
+  // Trigger animation
+  container.classList.remove('view-enter');
+  void container.offsetWidth;
+  container.classList.add('view-enter');
+
   const narrative = getCurrentNarrative();
   if (!narrative) return;
 
@@ -449,6 +454,11 @@ async function renderSessionComplete() {
   
   // Clear container
   container.innerHTML = '';
+
+  // Trigger animation
+  container.classList.remove('view-enter');
+  void container.offsetWidth;
+  container.classList.add('view-enter');
 
   const summary = getSessionSummary();
   const stats = (await window.storage?.getSRSStats()) || {};

@@ -87,11 +87,17 @@ function initializeApp() {
 
 function renderStep() {
     const container = document.getElementById('step-content');
+    const wizard = document.getElementById('wizard-container');
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
 
     container.innerHTML = '';
     prevBtn.style.display = state.step > 0 ? 'inline-block' : 'none';
+
+    // Trigger animation for new step content
+    container.classList.remove('view-enter');
+    void container.offsetWidth;
+    container.classList.add('view-enter');
 
     if (state.step === 0) {
         renderCategorySelect(container);
@@ -266,6 +272,11 @@ function renderResult() {
     wizard.style.display = 'none';
     result.style.display = 'block';
     
+    // Trigger animation
+    result.classList.remove('view-enter');
+    void result.offsetWidth;
+    result.classList.add('view-enter');
+
     // Clear previous content
     result.innerHTML = '';
 
@@ -548,6 +559,13 @@ window.switchView = async (view) => {
 
         const wizard = document.getElementById('wizard-container');
         const result = document.getElementById('result-container');
+
+        // Reset animations
+        [wizard, result].forEach(el => {
+            el.classList.remove('view-enter');
+            void el.offsetWidth; // Force reflow
+            el.classList.add('view-enter');
+        });
 
         switch (view) {
             case 'generate':
