@@ -351,20 +351,21 @@ async function getSRSStats() {
       .from('user_stats')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      // If not found, return default (stats will be created by trigger on first login)
-      if (error.code === 'PGRST116') {
-        return {
-          total_reviews: 0,
-          current_streak: 0,
-          longest_streak: 0,
-          last_review_date: null,
-          reviews_by_date: {}
-        };
-      }
       throw error;
+    }
+
+    if (!data) {
+      // If not found, return default (stats will be created by trigger on first login)
+      return {
+        total_reviews: 0,
+        current_streak: 0,
+        longest_streak: 0,
+        last_review_date: null,
+        reviews_by_date: {}
+      };
     }
 
     return {

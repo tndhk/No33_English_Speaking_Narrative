@@ -1,131 +1,60 @@
-import Ajv from 'ajv';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize JSON Schema validator
-const ajv = new Ajv({
-  allErrors: true,
-  verbose: true,
-  strict: false
-});
+// Simplified manual validator to avoid Ajv content security policy issues in Cloudflare Workers
+const validateSchema = (data) => {
+  const errors = [];
 
-// Define formal JSON Schema based on spec.md requirements
-const jsonSchema = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
-  type: 'object',
-  required: ['narrative_en', 'key_phrases', 'alternatives', 'recall_test'],
-  properties: {
-    narrative_en: {
-      type: 'string',
-      minLength: 1,
-      description: 'Main English narrative (5-8 sentences for Normal length, ±1 tolerance)'
-    },
-    key_phrases: {
-      type: 'array',
-      minItems: 1,
-      maxItems: 5,
-      description: 'Key phrases from the narrative (1-5 items)',
-      items: {
-        type: 'object',
-        required: ['phrase_en', 'meaning_ja', 'usage_hint_ja'],
-        properties: {
-          phrase_en: {
-            type: 'string',
-            minLength: 1,
-            description: 'English phrase'
-          },
-          meaning_ja: {
-            type: 'string',
-            minLength: 1,
-            description: 'Japanese meaning'
-          },
-          usage_hint_ja: {
-            type: 'string',
-            minLength: 1,
-            description: 'Brief usage hint in Japanese'
-          }
-        },
-        additionalProperties: false
+  if (!data || typeof data !== 'object') {
+    return [{ message: 'Root must be an object' }];
+  }
+
+  // narrative_en
+  if (typeof data.narrative_en !== 'string' || data.narrative_en.length < 1) {
+    errors.push({ instancePath: '/narrative_en', message: 'Must be a non-empty string' });
+  }
+
+  // key_phrases
+  if (!Array.isArray(data.key_phrases)) {
+    errors.push({ instancePath: '/key_phrases', message: 'Must be an array' });
+  } else {
+    data.key_phrases.forEach((item, i) => {
+      if (typeof item !== 'object') {
+        errors.push({ instancePath: `/key_phrases/${i}`, message: 'Must be an object' });
+        return;
       }
-    },
-    alternatives: {
-      type: 'array',
-      minItems: 1,
-      maxItems: 2,
-      description: 'Alternative expressions (1-2 items)',
-      items: {
-        type: 'object',
-        required: ['original_en', 'alternative_en', 'nuance_ja'],
-        properties: {
-          original_en: {
-            type: 'string',
-            minLength: 1,
-            description: 'Original expression from narrative'
-          },
-          alternative_en: {
-            type: 'string',
-            minLength: 1,
-            description: 'Alternative expression'
-          },
-          nuance_ja: {
-            type: 'string',
-            minLength: 1,
-            description: 'Explanation of nuance difference'
-          }
-        },
-        additionalProperties: false
+      if (!item.phrase_en) errors.push({ instancePath: `/key_phrases/${i}/phrase_en`, message: 'Missing phrase_en' });
+      if (!item.meaning_ja) errors.push({ instancePath: `/key_phrases/${i}/meaning_ja`, message: 'Missing meaning_ja' });
+      if (!item.usage_hint_ja) errors.push({ instancePath: `/key_phrases/${i}/usage_hint_ja`, message: 'Missing usage_hint_ja' });
+    });
+  }
+
+  // alternatives
+  if (!Array.isArray(data.alternatives)) {
+    errors.push({ instancePath: '/alternatives', message: 'Must be an array' });
+  } else {
+    data.alternatives.forEach((item, i) => {
+      if (typeof item !== 'object') {
+        errors.push({ instancePath: `/alternatives/${i}`, message: 'Must be an object' });
+        return;
       }
-    },
-    recall_test: {
-      type: 'object',
-      required: ['prompt_ja', 'expected_points_en'],
-      description: 'Recall test for memorization',
-      properties: {
-        prompt_ja: {
-          type: 'string',
-          minLength: 1,
-          description: '3 key points in Japanese for reproduction'
-        },
-        expected_points_en: {
-          type: 'array',
-          minItems: 2,
-          maxItems: 4,
-          description: 'Expected answer points (2-4 items)',
-          items: {
-            type: 'string',
-            minLength: 1
-          }
-        }
-      },
-      additionalProperties: false
-    },
-    pronunciation: {
-      type: 'object',
-      description: 'Optional word pronunciation guide',
-      properties: {
-        word: {
-          type: 'string',
-          minLength: 1,
-          description: 'Word to pronounce'
-        },
-        ipa: {
-          type: 'string',
-          minLength: 1,
-          description: 'IPA phonetic notation'
-        },
-        tip_ja: {
-          type: 'string',
-          minLength: 1,
-          description: 'Pronunciation tip in Japanese'
-        }
-      },
-      additionalProperties: false
+      if (!item.original_en) errors.push({ instancePath: `/alternatives/${i}/original_en`, message: 'Missing original_en' });
+      if (!item.alternative_en) errors.push({ instancePath: `/alternatives/${i}/alternative_en`, message: 'Missing alternative_en' });
+      if (!item.nuance_ja) errors.push({ instancePath: `/alternatives/${i}/nuance_ja`, message: 'Missing nuance_ja' });
+    });
+  }
+
+  // recall_test
+  if (!data.recall_test || typeof data.recall_test !== 'object') {
+    errors.push({ instancePath: '/recall_test', message: 'Must be an object' });
+  } else {
+    if (!data.recall_test.prompt_ja) errors.push({ instancePath: '/recall_test/prompt_ja', message: 'Missing prompt_ja' });
+    if (!Array.isArray(data.recall_test.expected_points_en)) {
+      errors.push({ instancePath: '/recall_test/expected_points_en', message: 'Must be an array' });
     }
-  },
-  additionalProperties: false
-};
+  }
 
-// Compile schema validator
-const validate = ajv.compile(jsonSchema);
+  return errors.length > 0 ? errors : null;
+};
 
 // Helper function to count sentences
 function countSentences(text) {
@@ -147,25 +76,24 @@ function validateOutput(jsonData, settings = {}) {
     validationType: 'comprehensive'
   };
 
-  // Step 1: Schema validation using ajv
+  // Step 1: Schema validation using manual validator
   console.log('[VALIDATION] Starting JSON schema validation');
-  const isSchemaValid = validate(jsonData);
+  const schemaErrors = validateSchema(jsonData);
+  const isSchemaValid = schemaErrors === null;
 
   if (!isSchemaValid) {
     console.error('[VALIDATION] Schema validation failed', {
       ...logContext,
-      errors: validate.errors,
+      errors: schemaErrors,
       data: jsonData
     });
 
     // Collect all schema validation errors
-    if (validate.errors) {
-      validate.errors.forEach(err => {
-        const path = err.instancePath || 'root';
-        const message = `${path || 'root'}: ${err.message}`;
-        errors.push(message);
-      });
-    }
+    schemaErrors.forEach(err => {
+      const path = err.instancePath || 'root';
+      const message = `${path}: ${err.message}`;
+      errors.push(message);
+    });
   } else {
     console.log('[VALIDATION] Schema validation passed');
   }
@@ -446,8 +374,8 @@ export async function onRequestPost(context) {
 
     // Escape user inputs to prevent prompt injection
     const sanitizedAnswers = answers.map((a, i) => {
-        const safeText = (a || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        return `  Question ${i + 1}: ${safeText}`;
+      const safeText = (a || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `  Question ${i + 1}: ${safeText}`;
     }).join('\n');
 
     const systemPromptTemplate = `# Role
