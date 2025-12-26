@@ -332,6 +332,15 @@ async function renderNarrativeDetailView(narrativeId) {
     day: 'numeric'
   });
 
+  const contextText = (narrative.user_answers && narrative.user_answers.length > 0 && narrative.user_answers.some(a => a.trim()))
+    ? narrative.user_answers.filter(a => a && a.trim()).join('\n')
+    : (narrative.recall_test?.prompt_ja || '')
+      .replace(/について教えてください[。？]?/g, '')
+      .replace(/書いてみましょう[。？]?/g, '')
+      .replace(/書いてみよう[。？]?/g, '')
+      .replace(/教えて[。？]?/g, '')
+      .trim();
+
   let html = `
     <!-- Back Button -->
     <div style="margin-bottom: 1.5rem;">
@@ -341,52 +350,50 @@ async function renderNarrativeDetailView(narrativeId) {
     </div>
 
     <!-- Header -->
-    <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; border: 1px solid var(--border-color);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <div style="font-size: 1.3rem; font-weight: bold;">${dateStr}</div>
-        <div style="background: var(--accent-color); color: white; padding: 0.4rem 0.8rem; border-radius: 0.5rem; font-size: 0.9rem;">
-          ${formatCategory(narrative.category)}
+    <h2 style="margin: 0 0 1.5rem 0; font-size: 1.25rem;">${dateStr}</h2>
+
+    <!-- Narrative Card -->
+    <div class="card" style="
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      text-align: left;
+    ">
+      <!-- Memory Section -->
+      ${contextText ? `
+        <div style="margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px dashed rgba(255,255,255,0.1);">
+          ${contextText.split('\n').filter(line => line.trim()).map(line => `
+            <p style="margin-bottom: 0.5rem; line-height: 1.6; color: var(--text-secondary); font-size: 0.95rem;">${line}</p>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      <!-- English Narrative Section -->
+      <div style="margin-bottom: 2rem;">
+        <div style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; line-height: 1.8;">
+          ${narrative.narrative_en}
         </div>
       </div>
-    </div>
 
-    <!-- English Narrative -->
-    <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
-      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">📝 英文</h3>
-      <div style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; line-height: 1.8; white-space: pre-wrap;">
-        ${narrative.narrative_en}
-      </div>
-    </div>
-
-    <!-- Key Phrases -->
-    <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
-      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">💡 キーフレーズ</h3>
-      <div style="display: grid; gap: 0.75rem;">
-  `;
-
-  if (narrative.key_phrases && narrative.key_phrases.length > 0) {
-    narrative.key_phrases.forEach(p => {
-      html += `
-        <div style="background: rgba(255, 255, 255, 0.05); padding: 0.75rem; border-radius: 0.5rem; border-left: 3px solid var(--accent-color);">
-          <div style="font-weight: bold; margin-bottom: 0.25rem;">${p.phrase_en}</div>
-          <div style="color: var(--text-secondary); font-size: 0.9rem;">${p.meaning_ja}</div>
-        </div>
-      `;
-    });
-  } else {
-    html += '<p style="color: var(--text-secondary); margin: 0;">キーフレーズはありません</p>';
-  }
-
-  html += `
-      </div>
-    </div>
-
-    <!-- Recall Test -->
-    <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
-      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">🎯 この日記のポイント</h3>
-      <div style="font-size: 1rem; line-height: 1.6;">
-        ${narrative.recall_test?.prompt_ja || 'ポイントはありません'}
-      </div>
+      <!-- Key Phrases Section -->
+      ${narrative.key_phrases && narrative.key_phrases.length > 0 ? `
+        <details class="key-phrases-details" style="background: rgba(255,255,255,0.03); border-radius: 0.75rem; overflow: hidden;">
+          <summary style="padding: 1rem; cursor: pointer; font-size: 0.8rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; outline: none; list-style: none;">
+            ▶ Key Phrases
+          </summary>
+          <div style="padding: 0 1rem 1rem 1rem;">
+            ${narrative.key_phrases.slice(0, 3).map((p, idx) => `
+              <div style="display: flex; flex-direction: column; margin-bottom: 0.75rem; padding-bottom: 0.75rem; ${idx < narrative.key_phrases.slice(0, 3).length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.05);' : ''}">
+                <div style="color: var(--accent-color); font-weight: 500; font-size: 0.95rem; margin-bottom: 0.2rem;">${p.phrase_en}</div>
+                <div style="color: var(--text-secondary); font-size: 0.85rem;">${p.meaning_ja}</div>
+              </div>
+            `).join('')}
+          </div>
+        </details>
+      ` : ''}
     </div>
 
 

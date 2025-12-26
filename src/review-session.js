@@ -230,20 +230,18 @@ function renderReviewSession() {
   const progress = getSessionProgress();
   const questionsLines = narrative.recall_test.prompt_ja.split('\n');
 
-  // Header Section (Simplified)
-  const headerDiv = document.createElement('div');
-  headerDiv.style.marginBottom = '1.5rem';
-
-  const titleRow = document.createElement('div');
-  titleRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center;';
+  const dateStr = new Date(narrative.created_at).toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 
   const title = document.createElement('h2');
-  title.style.margin = '0';
+  title.style.margin = '0 0 1.5rem 0';
   title.style.fontSize = '1.25rem';
-  title.textContent = 'Day ' + (reviewSession.currentIndex + 1);
+  title.textContent = dateStr;
 
-  titleRow.append(title);
-  headerDiv.append(titleRow);
+  headerDiv.append(title);
   container.appendChild(headerDiv);
 
   // Add padding to container to prevent content from being hidden behind sticky footer
@@ -260,14 +258,9 @@ function renderReviewSession() {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   `;
 
-  // 1. Context (Top) - Prioritize User Answers
+  // 1. Memory (Top) - Prioritize User Answers
   const jpContext = document.createElement('div');
   jpContext.style.cssText = 'margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px dashed rgba(255,255,255,0.1);';
-
-  const jpLabel = document.createElement('div');
-  jpLabel.style.cssText = 'font-size: 0.85rem; color: var(--accent-color); margin-bottom: 0.5rem; font-weight: bold; letter-spacing: 0.05em;';
-  jpLabel.textContent = '📅 CONTEXT';
-  jpContext.appendChild(jpLabel);
 
   let contextText = '';
   if (narrative.user_answers && narrative.user_answers.length > 0 && narrative.user_answers.some(a => a.trim())) {
