@@ -546,6 +546,7 @@ window.filterByCategory = async function (category) {
 
 window.viewNarrativeDetails = async function (id) {
   // Navigate to detail view
+  window.scrollTo(0, 0);
   window.showLoading('Loading details...');
   try {
     await window.renderNarrativeDetailView(id);
