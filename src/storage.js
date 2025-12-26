@@ -71,7 +71,7 @@ function transformToDB(appObj) {
 async function getAllNarratives() {
   try {
     const { data, error } = await supabase
-      .from('en_journal_narratives')
+      .from('narratives')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -113,7 +113,7 @@ async function saveNarrative(narrative, metadata = {}) {
     const dbRow = transformToDB(newNarrative);
 
     const { data, error } = await supabase
-      .from('en_journal_narratives')
+      .from('narratives')
       .insert(dbRow)
       .select()
       .single();
@@ -137,7 +137,7 @@ async function saveNarrative(narrative, metadata = {}) {
 async function getNarrativeById(id) {
   try {
     const { data, error } = await supabase
-      .from('en_journal_narratives')
+      .from('narratives')
       .select('*')
       .eq('id', id)
       .single();
@@ -168,7 +168,7 @@ async function updateNarrativeSRS(id, srsData) {
     const newSrs = { ...current.srs, ...srsData };
 
     const { data, error } = await supabase
-      .from('en_journal_narratives')
+      .from('narratives')
       .update({ srs_data: newSrs })
       .eq('id', id)
       .select()
@@ -190,7 +190,7 @@ async function updateNarrativeSRS(id, srsData) {
 async function deleteNarrative(id) {
   try {
     const { error } = await supabase
-      .from('en_journal_narratives')
+      .from('narratives')
       .delete()
       .eq('id', id);
 
@@ -548,7 +548,7 @@ async function importNarrativesJSON(jsonString) {
     });
 
     const { data, error } = await supabase
-      .from('en_journal_narratives')
+      .from('narratives')
       .insert(dbRows)
       .select();
 
@@ -566,7 +566,7 @@ async function importNarrativesJSON(jsonString) {
  */
 async function clearAllData() {
   try {
-    await supabase.from('en_journal_narratives').delete().neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+    await supabase.from('narratives').delete().neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
     await resetSRSStats();
   } catch (error) {
     console.error('Error clearing data:', error);
