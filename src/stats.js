@@ -53,10 +53,8 @@ async function renderReviewDashboard() {
   }
 
   let html = `
-    <h2>📖 My Journal</h2>
-    
     <div style="margin-bottom: 2rem;">
-        <h3 style="font-weight: normal; color: var(--text-secondary); margin-bottom: 1.5rem;">👋 おかえりなさい</h3>
+
   `;
 
   // Featured Memory Card
@@ -181,8 +179,6 @@ async function renderStatsPage() {
   });
 
   let html = `
-    <h2>📊 ジャーナルデータ</h2>
-
     <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
         <div>
@@ -306,8 +302,6 @@ async function renderHistoryPage() {
   window.allNarratives = narratives; // Cache for calendar rendering
 
   let html = `
-    <h2>📅 Journal Calendar</h2>
-    
     <!-- Calendar Controls -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; background: #0f172a; padding: 1rem; border-radius: 0.5rem;">
         <button class="secondary" onclick="window.changeMonth(-1)">◀</button>

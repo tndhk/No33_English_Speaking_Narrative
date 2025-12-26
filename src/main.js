@@ -163,7 +163,7 @@ async function renderStep() {
 }
 
 function renderCategorySelect(container) {
-    container.innerHTML = '<h2>興味のあるカテゴリを選んでください</h2>';
+    container.innerHTML = ''; // Clear container
     const list = document.createElement('div');
     list.className = 'option-list';
 
