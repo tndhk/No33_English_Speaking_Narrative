@@ -227,7 +227,7 @@ function renderReviewSession() {
 
   const title = document.createElement('h2');
   title.style.margin = '0';
-  title.textContent = '復習';
+  title.textContent = '振り返り';
 
   const endBtn = document.createElement('button');
   endBtn.className = 'secondary';
@@ -384,41 +384,43 @@ function renderReviewSession() {
   flipCardContainer.appendChild(card);
   container.appendChild(flipCardContainer);
 
-  // Rating Buttons
+  // Rating Buttons (Simplified to 2 options)
   const ratingDiv = document.createElement('div');
   ratingDiv.style.marginBottom = '2rem';
 
   const ratingLabel = document.createElement('p');
   ratingLabel.style.cssText = 'text-align: center; margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);';
-  ratingLabel.textContent = 'どうでしたか？';
+  ratingLabel.textContent = 'この日記はどうでしたか？';
   ratingDiv.appendChild(ratingLabel);
 
   const buttonsGrid = document.createElement('div');
-  buttonsGrid.style.cssText = 'display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;';
+  buttonsGrid.style.cssText = 'display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;';
 
   const ratings = [
-    { q: 0, icon: '❌', label: '忘れた', bg: '#7f1d1d', border: '#dc2626' },
-    { q: 1, icon: '😰', label: '難しい', bg: '#713f12', border: '#ea580c' },
-    { q: 2, icon: '👍', label: '良好', bg: '#1e3a8a', border: '#3b82f6' },
-    { q: 3, icon: '🎉', label: '簡単', bg: '#15803d', border: '#22c55e' }
+    { q: 1, icon: '❤️', label: 'また読みたい', bg: '#be123c', border: '#fb7185', subtitle: 'すぐにまた表示' },
+    { q: 2, icon: '✓', label: '読んだ', bg: '#1e3a8a', border: '#3b82f6', subtitle: '少し先に表示' }
   ];
 
   ratings.forEach(r => {
     const btn = document.createElement('button');
     btn.className = 'review-quality';
     btn.dataset.quality = r.q;
-    btn.style.cssText = `background: ${r.bg}; border: 2px solid ${r.border};`;
+    btn.style.cssText = `background: ${r.bg}; border: 2px solid ${r.border}; padding: 1.25rem;`;
     btn.onclick = () => window.rateReview(r.q);
 
     const iconDiv = document.createElement('div');
-    iconDiv.style.fontSize = '1.5rem';
+    iconDiv.style.fontSize = '2rem';
     iconDiv.textContent = r.icon;
 
     const labelDiv = document.createElement('div');
-    labelDiv.style.cssText = 'font-size: 0.75rem; margin-top: 0.5rem;';
+    labelDiv.style.cssText = 'font-size: 0.95rem; margin-top: 0.5rem; font-weight: 600;';
     labelDiv.textContent = r.label;
 
-    btn.append(iconDiv, labelDiv);
+    const subtitleDiv = document.createElement('div');
+    subtitleDiv.style.cssText = 'font-size: 0.7rem; margin-top: 0.25rem; opacity: 0.7;';
+    subtitleDiv.textContent = r.subtitle;
+
+    btn.append(iconDiv, labelDiv, subtitleDiv);
     buttonsGrid.appendChild(btn);
   });
 
@@ -468,7 +470,7 @@ async function renderSessionComplete() {
 
   const h2 = document.createElement('h2');
   h2.style.marginBottom = '1.5rem';
-  h2.textContent = '💪 今日の復習完了！';
+  h2.textContent = '💪 今日の振り返り完了！';
   wrapper.appendChild(h2);
 
   const statsBox = document.createElement('div');
@@ -493,7 +495,7 @@ async function renderSessionComplete() {
 
   const countStat = document.createElement('div');
   const csIcon = document.createElement('div'); csIcon.style.cssText = 'font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;'; csIcon.textContent = '📊';
-  const csLabel = document.createElement('div'); csLabel.style.cssText = 'font-size: 0.9rem; color: var(--text-secondary);'; csLabel.textContent = '復習数';
+  const csLabel = document.createElement('div'); csLabel.style.cssText = 'font-size: 0.9rem; color: var(--text-secondary);'; csLabel.textContent = '振り返り数';
   const csValue = document.createElement('div'); csValue.style.cssText = 'font-size: 1.3rem; margin-top: 0.5rem;'; csValue.textContent = summary.total_reviews;
   countStat.append(csIcon, csLabel, csValue);
 
@@ -551,7 +553,7 @@ async function renderSessionComplete() {
   const restartBtn = document.createElement('button');
   restartBtn.className = 'primary';
   restartBtn.style.flex = '1';
-  restartBtn.textContent = '復習を再開';
+  restartBtn.textContent = '振り返りを続ける';
   restartBtn.onclick = () => window.goToReviewDashboard();
 
   const newBtn = document.createElement('button');
@@ -595,7 +597,7 @@ window.toggleAnswer = function () {
 };
 
 window.endReviewClick = function () {
-  if (confirm('復習を終了しますか？')) {
+  if (confirm('振り返りを終了しますか？')) {
     window.endReviewSession();
     window.goToReviewDashboard();
   }
@@ -612,7 +614,7 @@ window.showNarrativeDetails = function () {
     【キーフレーズ】
     ${narrative.key_phrases.map(p => `${p.phrase_en} - ${p.meaning_ja}`).join('\n')}
 
-    【復習テスト】
+    【この日記のポイント】
     ${narrative.recall_test.prompt_ja}
     `;
 

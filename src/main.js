@@ -196,7 +196,7 @@ function renderDailyLimitReached(container) {
             <p style="color: var(--text-secondary); margin-bottom: 2rem;">
                 日記は1日1回までです。<br>また明日、新しい思い出を記録しましょう。
             </p>
-            <button class="secondary" onclick="window.switchView('${VIEW.REVIEW}')">振り返りを行う</button>
+            <button class="secondary" onclick="window.switchView('${VIEW.REVIEW}')">日記を振り返る</button>
         </div>
     `;
 }
@@ -646,7 +646,7 @@ window.saveNarrativeForReview = async () => {
         const saved = await window.storage?.saveNarrative(state.narrative, metadata);
 
         if (saved) {
-            alert('✅ Journal entry saved! Ready for review.');
+            alert('✅ 日記を保存しました！振り返り準備完了！');
             setTimeout(() => window.switchView(VIEW.REVIEW), 500);
         } else {
             alert('Failed to save narrative');

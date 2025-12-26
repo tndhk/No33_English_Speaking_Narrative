@@ -20,33 +20,33 @@ describe('SRS (Spaced Repetition System) Module', () => {
   describe('calculateNextReview', () => {
     // 1. Branch Coverage & Boundary Value Analysis
     it('should reset interval to 0 when quality is FORGOT (0)', () => {
-      const currentInterval = 4; // 14 days
+      const currentInterval = 3; // 30 days (max index in new 4-stage system)
       const result = srs.calculateNextReview(currentInterval, srs.REVIEW_QUALITY.FORGOT);
-      
+
       expect(result.nextIntervalIndex).toBe(0);
       expect(result.status).toBe('learning');
-      expect(result.daysUntilReview).toBe(0);
+      expect(result.daysUntilReview).toBe(1); // New interval at index 0 is 1 day
     });
 
     it('should stay at current interval when quality is HARD (1)', () => {
-      const currentInterval = 2; // 3 days
+      const currentInterval = 2; // 7 days (index 2 in new system)
       const result = srs.calculateNextReview(currentInterval, srs.REVIEW_QUALITY.HARD);
-      
+
       expect(result.nextIntervalIndex).toBe(currentInterval);
     });
 
     it('should advance 1 interval when quality is GOOD (2)', () => {
-      const currentInterval = 1; // 1 day
+      const currentInterval = 1; // 3 days (index 1 in new system)
       const result = srs.calculateNextReview(currentInterval, srs.REVIEW_QUALITY.GOOD);
-      
-      expect(result.nextIntervalIndex).toBe(2); // Should become 3 days
+
+      expect(result.nextIntervalIndex).toBe(2); // Should become 7 days (index 2)
     });
 
     it('should advance 2 intervals when quality is EASY (3)', () => {
-      const currentInterval = 1; // 1 day
+      const currentInterval = 0; // 1 day (index 0 in new system)
       const result = srs.calculateNextReview(currentInterval, srs.REVIEW_QUALITY.EASY);
-      
-      expect(result.nextIntervalIndex).toBe(3); // Should jump to 7 days
+
+      expect(result.nextIntervalIndex).toBe(2); // Should jump to 7 days (index 2)
     });
 
     // 2. Boundary Value Analysis: Max Interval
@@ -307,23 +307,25 @@ describe('SRS (Spaced Repetition System) Module', () => {
       // i=4: add SRS_INTERVALS[5] = 30
       // Total = 1+3+7+14+30 = 55 days.
       
-      const narrative = { 
-        srs: { 
-          interval_index: 0, 
-          quality_history: [2, 2, 2] 
-        } 
+      const narrative = {
+        srs: {
+          interval_index: 0,
+          quality_history: [2, 2, 2]
+        }
       };
-      
+
       const resultDateStr = srs.estimateMasteryDate(narrative);
       const resultDate = new Date(resultDateStr);
       const today = new Date();
-      
+
       const diffTime = resultDate - today;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
+
+      // New 4-stage intervals: [1, 3, 7, 30]
+      // From index 0 to mastery: 3 + 7 + 30 = 40 days
       // Allow +/- 1 day for timezone/execution time diffs
-      expect(diffDays).toBeGreaterThanOrEqual(54); 
-      expect(diffDays).toBeLessThanOrEqual(56);
+      expect(diffDays).toBeGreaterThanOrEqual(39);
+      expect(diffDays).toBeLessThanOrEqual(41);
     });
   });
 });
