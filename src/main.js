@@ -147,7 +147,17 @@ async function renderStep() {
     }
 
     prevBtn.style.display = state.step > 0 ? 'inline-block' : 'none';
-    nextBtn.style.display = 'inline-block'; // Ensure next button is shown otherwise
+
+    // Hide Next button on step 0 (auto-advance), show for other steps
+    nextBtn.style.display = state.step === 0 ? 'none' : 'inline-block';
+
+    // Apply sticky positioning for step actions on steps 1 and 2
+    const stepActions = document.getElementById('step-actions');
+    if (state.step > 0) {
+        stepActions.classList.add('sticky-actions');
+    } else {
+        stepActions.classList.remove('sticky-actions');
+    }
 
     // Trigger animation for new step content
     container.classList.remove('view-enter');
@@ -176,6 +186,11 @@ function renderCategorySelect(container) {
             state.category = cat.id;
             document.querySelectorAll('.option-item').forEach(el => el.classList.remove('selected'));
             item.classList.add('selected');
+            // Auto-advance after a short delay for visual feedback
+            setTimeout(() => {
+                state.step = 1;
+                renderStep();
+            }, 200);
         };
         list.appendChild(item);
     });

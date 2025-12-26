@@ -372,6 +372,26 @@ button.secondary:hover {
         max-width: 100%;
         width: 100%;
     }
+
+    /* Sticky action buttons for wizard steps 1 and 2 */
+    .sticky-actions {
+        position: fixed !important;
+        left: 0;
+        right: 0;
+        bottom: calc(60px + env(safe-area-inset-bottom));
+        /* Above bottom nav */
+        background: linear-gradient(to top, var(--bg-color) 80%, transparent);
+        padding: 1rem 1.5rem 1.5rem !important;
+        z-index: 100;
+        display: flex !important;
+        flex-direction: row-reverse;
+        gap: 0.75rem;
+    }
+
+    .sticky-actions button {
+        flex: 1;
+        margin: 0 !important;
+    }
 }
 
 /* Review Session Styles */
