@@ -445,10 +445,10 @@ window.goToHistory = async function () {
 };
 
 window.goToGenerate = function () {
-  window.state.currentView = 'generate';
   window.state.step = 0;
-  window.updateNavigation();
-  window.renderStep();
+  window.state.category = null;
+  window.state.answers = [];
+  window.switchView('generate');
 };
 
 window.startReview = async function () {
