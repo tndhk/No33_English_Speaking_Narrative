@@ -200,6 +200,10 @@ async function getNarrativesUpcoming(days = 7) {
  * Render review session UI (main review screen)
  * Call this from main.js to display the review interface
  */
+/**
+ * Render review session UI (main review screen)
+ * Call this from main.js to display the review interface
+ */
 function renderReviewSession() {
   const container = document.getElementById('result-container');
   if (!container) return;
@@ -265,186 +269,166 @@ function renderReviewSession() {
   headerDiv.append(titleRow, progressContainer);
   container.appendChild(headerDiv);
 
-  // Flip Card Container
-  const flipCardContainer = document.createElement('div');
-  flipCardContainer.id = 'flip-card-container';
-  flipCardContainer.style.cssText = 'perspective: 1000px; margin-bottom: 2rem;';
-
+  // Journal Entry Card (Combined View)
   const card = document.createElement('div');
   card.style.cssText = `
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border: 2px solid var(--accent-color);
+    border: 1px solid var(--border-color);
     border-radius: 1rem;
     padding: 2rem;
-    min-height: 250px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.3s;
-    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   `;
-  card.onclick = () => window.toggleAnswer();
 
-  if (!reviewSession.showAnswer) {
-    // Front: Japanese prompt
-    const frontContent = document.createElement('div');
-    frontContent.style.cssText = 'font-size: 1.1rem; color: var(--text-secondary); width: 100%;';
+  // 1. Japanese Context (Top)
+  const jpContext = document.createElement('div');
+  jpContext.style.cssText = 'margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px dashed rgba(255,255,255,0.1);';
 
-    const label = document.createElement('p');
-    label.style.cssText = 'margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-tertiary);';
-    label.textContent = '【問題】';
-    frontContent.appendChild(label);
+  const jpLabel = document.createElement('div');
+  jpLabel.style.cssText = 'font-size: 0.85rem; color: var(--accent-color); margin-bottom: 0.5rem; font-weight: bold; letter-spacing: 0.05em;';
+  jpLabel.textContent = '💭 MEMORY';
+  jpContext.appendChild(jpLabel);
 
-    questionsLines.forEach(line => {
-      if (line.trim()) {
-        const p = document.createElement('p');
-        p.style.cssText = 'margin-bottom: 0.5rem; line-height: 1.6;';
-        p.textContent = line;
-        frontContent.appendChild(p);
-      }
+  questionsLines.forEach(line => {
+    if (line.trim()) {
+      const p = document.createElement('p');
+      p.style.cssText = 'margin-bottom: 0.5rem; line-height: 1.6; color: var(--text-secondary); font-size: 0.95rem;';
+      p.textContent = line;
+      jpContext.appendChild(p);
+    }
+  });
+  card.appendChild(jpContext);
+
+  // 2. English Narrative (Middle/Main)
+  const enContent = document.createElement('div');
+  enContent.style.cssText = 'margin-bottom: 2rem;';
+
+  const enLabel = document.createElement('div');
+  enLabel.style.cssText = 'font-size: 0.85rem; color: var(--text-tertiary); margin-bottom: 0.75rem; display:flex; justify-content:space-between; align-items:center;';
+  enLabel.innerHTML = '<span>JOURNAL</span>';
+
+  // Play all button
+  const playAllBtn = document.createElement('button');
+  playAllBtn.className = 'secondary';
+  playAllBtn.style.cssText = 'padding: 0.2rem 0.6rem; font-size: 0.75rem;';
+  playAllBtn.innerHTML = '🔊 全文再生';
+  playAllBtn.onclick = (e) => {
+    e.stopPropagation();
+    window.speak(null, null, narrative.narrative_en);
+  };
+  enLabel.appendChild(playAllBtn);
+
+  enContent.appendChild(enLabel);
+
+  const narrativeText = document.createElement('div');
+  narrativeText.style.cssText = 'font-size: 1.15rem; line-height: 1.8; font-family: "Outfit", sans-serif;';
+
+  const sentences = narrative.narrative_en.split(/(?<=[.!?])\s+/);
+  sentences.forEach((s, index) => {
+    const item = document.createElement('div');
+    item.className = 'sentence-item';
+    item.style.marginBottom = '0.75rem';
+
+    const playBtn = document.createElement('button');
+    playBtn.className = 'play-sentence-btn';
+    playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+
+    const span = document.createElement('span');
+    span.className = 'sentence-text';
+    span.dataset.index = index;
+    span.textContent = s;
+
+    const playHandler = (e) => {
+      if (e) e.stopPropagation();
+      window.speak(s, index, narrative.narrative_en);
+    };
+
+    playBtn.onclick = playHandler;
+    span.onclick = playHandler;
+
+    item.append(playBtn, span);
+    narrativeText.appendChild(item);
+  });
+  enContent.appendChild(narrativeText);
+  card.appendChild(enContent);
+
+  // 3. Key Phrases (Bottom)
+  if (narrative.key_phrases && narrative.key_phrases.length > 0) {
+    const kpBox = document.createElement('div');
+    kpBox.style.cssText = 'background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 0.75rem;';
+
+    const kpLabel = document.createElement('div');
+    kpLabel.style.cssText = 'font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;';
+    kpLabel.textContent = 'Key Phrases';
+    kpBox.appendChild(kpLabel);
+
+    narrative.key_phrases.slice(0, 3).forEach(p => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display: flex; flex-direction: column; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05);';
+      if (p === narrative.key_phrases[narrative.key_phrases.length - 1]) row.style.borderBottom = 'none';
+
+      const en = document.createElement('div');
+      en.style.cssText = 'color: var(--accent-color); font-weight: 500; font-size: 0.95rem; margin-bottom: 0.2rem;';
+      en.textContent = p.phrase_en;
+
+      const ja = document.createElement('div');
+      ja.style.cssText = 'color: var(--text-secondary); font-size: 0.85rem;';
+      ja.textContent = p.meaning_ja;
+
+      row.append(en, ja);
+      kpBox.appendChild(row);
     });
-
-    const hint = document.createElement('p');
-    hint.style.cssText = 'margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-tertiary); cursor: pointer;';
-    hint.textContent = 'クリックで答えを表示';
-    frontContent.appendChild(hint);
-
-    card.appendChild(frontContent);
-  } else {
-    // Back: English narrative + key phrases
-    const backContent = document.createElement('div');
-    backContent.style.cssText = 'text-align: left; width: 100%;';
-
-    const label = document.createElement('p');
-    label.style.cssText = 'margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-tertiary);';
-    label.textContent = '【正解】';
-    backContent.appendChild(label);
-
-    const contentBox = document.createElement('div');
-    contentBox.style.cssText = 'background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;';
-
-    const narrativeText = document.createElement('div');
-    narrativeText.style.cssText = 'font-size: 1rem; line-height: 1.8; margin-bottom: 1.5rem;';
-
-    const sentences = narrative.narrative_en.split(/(?<=[.!?])\s+/);
-    sentences.forEach((s, index) => {
-      const item = document.createElement('div');
-      item.className = 'sentence-item';
-      item.style.marginBottom = '0.5rem';
-
-      const playBtn = document.createElement('button');
-      playBtn.className = 'play-sentence-btn';
-      playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
-
-      const span = document.createElement('span');
-      span.className = 'sentence-text';
-      span.dataset.index = index;
-      span.textContent = s;
-
-      const playHandler = (e) => {
-        if (e) e.stopPropagation();
-        window.speak(s, index, narrative.narrative_en);
-      };
-
-      playBtn.onclick = playHandler;
-      span.onclick = playHandler;
-
-      item.append(playBtn, span);
-      narrativeText.appendChild(item);
-    });
-    contentBox.appendChild(narrativeText);
-
-    const keyPhrasesBox = document.createElement('div');
-    keyPhrasesBox.style.cssText = 'border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;';
-
-    const kpLabel = document.createElement('p');
-    kpLabel.style.cssText = 'font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: bold;';
-    kpLabel.textContent = 'キーフレーズ:';
-    keyPhrasesBox.appendChild(kpLabel);
-
-    narrative.key_phrases.slice(0, 2).forEach(p => {
-      const div = document.createElement('div');
-      div.style.cssText = 'font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--accent-color);';
-      div.textContent = p.phrase_en;
-      keyPhrasesBox.appendChild(div);
-    });
-
-    contentBox.appendChild(keyPhrasesBox);
-    backContent.appendChild(contentBox);
-
-    const backHint = document.createElement('p');
-    backHint.style.cssText = 'font-size: 0.8rem; color: var(--text-tertiary); cursor: pointer;';
-    backHint.textContent = 'クリックで問題に戻る';
-    backContent.appendChild(backHint);
-
-    card.appendChild(backContent);
+    card.appendChild(kpBox);
   }
 
-  flipCardContainer.appendChild(card);
-  container.appendChild(flipCardContainer);
+  container.appendChild(card);
 
-  // Rating Buttons (Simplified to 2 options)
+  // Rating Buttons
   const ratingDiv = document.createElement('div');
   ratingDiv.style.marginBottom = '2rem';
 
   const ratingLabel = document.createElement('p');
-  ratingLabel.style.cssText = 'text-align: center; margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);';
-  ratingLabel.textContent = 'この日記はどうでしたか？';
+  ratingLabel.style.cssText = 'text-align: center; margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-secondary);';
+  ratingLabel.textContent = 'この日記を読み終わりましたか？';
   ratingDiv.appendChild(ratingLabel);
 
   const buttonsGrid = document.createElement('div');
   buttonsGrid.style.cssText = 'display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;';
 
   const ratings = [
-    { q: 1, icon: '❤️', label: 'また読みたい', bg: '#be123c', border: '#fb7185', subtitle: 'すぐにまた表示' },
-    { q: 2, icon: '✓', label: '読んだ', bg: '#1e3a8a', border: '#3b82f6', subtitle: '少し先に表示' }
+    { q: 1, icon: '🗓️', label: 'また近日中に', bg: 'rgba(255,255,255,0.05)', border: 'var(--border-color)', subtitle: 'Shorter Interval' },
+    { q: 2, icon: '✅', label: '完了 (次は先へ)', bg: 'rgba(59, 130, 246, 0.2)', border: 'var(--accent-color)', subtitle: 'Longer Interval' }
   ];
 
   ratings.forEach(r => {
     const btn = document.createElement('button');
     btn.className = 'review-quality';
     btn.dataset.quality = r.q;
-    btn.style.cssText = `background: ${r.bg}; border: 2px solid ${r.border}; padding: 1.25rem;`;
+    btn.style.cssText = `background: ${r.bg}; border: 1px solid ${r.border}; padding: 1rem; transition: transform 0.1s;`;
     btn.onclick = () => window.rateReview(r.q);
 
+    const contentWrapper = document.createElement('div');
+    contentWrapper.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 0.25rem;';
+
     const iconDiv = document.createElement('div');
-    iconDiv.style.fontSize = '2rem';
+    iconDiv.style.fontSize = '1.5rem';
     iconDiv.textContent = r.icon;
 
     const labelDiv = document.createElement('div');
-    labelDiv.style.cssText = 'font-size: 0.95rem; margin-top: 0.5rem; font-weight: 600;';
+    labelDiv.style.cssText = 'font-size: 0.95rem; font-weight: 600; color: var(--text-primary);';
     labelDiv.textContent = r.label;
 
     const subtitleDiv = document.createElement('div');
-    subtitleDiv.style.cssText = 'font-size: 0.7rem; margin-top: 0.25rem; opacity: 0.7;';
+    subtitleDiv.style.cssText = 'font-size: 0.75rem; color: var(--text-secondary);';
     subtitleDiv.textContent = r.subtitle;
 
-    btn.append(iconDiv, labelDiv, subtitleDiv);
+    contentWrapper.append(iconDiv, labelDiv, subtitleDiv);
+    btn.appendChild(contentWrapper);
     buttonsGrid.appendChild(btn);
   });
 
   ratingDiv.appendChild(buttonsGrid);
   container.appendChild(ratingDiv);
-
-  // Bottom Actions
-  const bottomActions = document.createElement('div');
-  bottomActions.style.cssText = 'display: flex; gap: 1rem;';
-
-  const speakBtn = document.createElement('button');
-  speakBtn.className = 'secondary';
-  speakBtn.style.flex = '1';
-  speakBtn.textContent = '📢 再生';
-  speakBtn.onclick = () => window.speak(null, null, narrative.narrative_en);
-
-  const detailBtn = document.createElement('button');
-  detailBtn.className = 'secondary';
-  detailBtn.style.flex = '1';
-  detailBtn.textContent = '詳細';
-  detailBtn.onclick = () => window.showNarrativeDetails();
-
-  bottomActions.append(speakBtn, detailBtn);
-  container.appendChild(bottomActions);
 }
 
 /**
