@@ -241,8 +241,7 @@ function renderReviewSession() {
   title.style.fontSize = '1.25rem';
   title.textContent = dateStr;
 
-  headerDiv.append(title);
-  container.appendChild(headerDiv);
+  container.appendChild(title);
 
   // Add padding to container to prevent content from being hidden behind sticky footer
   container.style.paddingBottom = '110px';
