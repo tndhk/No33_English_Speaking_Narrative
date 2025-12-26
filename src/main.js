@@ -338,10 +338,16 @@ async function generateNarrative() {
     }
 }
 
+/**
+ * Render the generation result with a premium learning interface
+ */
 function renderResult() {
     const wizard = document.getElementById('wizard-container');
     const result = document.getElementById('result-container');
     const data = state.narrative;
+
+    // Ensure category is preserved in state.narrative if missing from API
+    if (!data.category) data.category = state.category;
 
     wizard.style.display = 'none';
     result.style.display = 'block';
@@ -351,70 +357,98 @@ function renderResult() {
     void result.offsetWidth;
     result.classList.add('view-enter');
 
-    // Format category nicely
+    // Format category and date nicely
     const displayCategory = formatCategory(data.category);
+    const dateOptions = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+    const formattedDate = new Date().toLocaleDateString('en-US', dateOptions);
+
+    // Split narrative into sentences for interactive viewing
+    const sentences = data.narrative_en.split(/(?<=[.!?])\s+/);
 
     const html = `
-        <h2 style="margin-bottom: 0.5rem;">${displayCategory}</h2>
-        <div style="color: var(--text-secondary); margin-bottom: 2rem;">${new Date().toLocaleDateString('ja-JP')}</div>
+        <div class="result-header" style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+                <h2 style="margin: 0; font-family: 'Outfit', sans-serif;">${displayCategory}</h2>
+                <span style="font-size: 0.9rem; color: var(--text-secondary);">${formattedDate}</span>
+            </div>
+            <div style="height: 2px; background: linear-gradient(90deg, var(--accent-color), transparent); width: 100px;"></div>
+        </div>
         
-        <div class="result-grid">
+        <div class="result-grid" style="display: flex; flex-direction: column; gap: 2rem;">
             <!-- Narrative (Main) -->
-            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color); margin-bottom: 2rem;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                    <h3>📖 Generated Narrative</h3>
-                     <div style="display:flex; gap:0.5rem;">
-                        <button class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem;" onclick="window.speak(document.querySelector('.editable-narrative').value)">🔊 Play</button>
+            <section class="card" style="background: rgba(30, 41, 59, 0.5); padding: 2rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.2rem;">📖</span> English Journal
+                    </h3>
+                    <div style="display:flex; gap:0.75rem;">
+                        <button class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="window.speak()">🔊 Full Play</button>
                     </div>
                 </div>
-                <textarea class="editable-narrative" style="width:100%; min-height:200px; background:transparent; border:none; color:inherit; font-size:1.1rem; line-height:1.6; resize:vertical; padding:0.5rem;"></textarea>
-            </div>
+                
+                <!-- Interactive Reading Mode -->
+                <div class="narrative-display" style="line-height: 2; font-size: 1.15rem; margin-bottom: 1.5rem;">
+                    ${sentences.map((s, i) => `
+                        <span class="sentence-text" 
+                              data-index="${i}" 
+                              style="cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: all 0.2s;"
+                              onclick="window.speak('${s.replace(/'/g, "\\'")}', ${i})">${s}</span> 
+                    `).join('')}
+                </div>
+
+                <!-- Hidden Editable Textarea for background state management -->
+                <textarea class="editable-narrative" style="display:none;">${data.narrative_en}</textarea>
+                
+                <p style="font-size: 0.85rem; color: var(--text-secondary); font-style: italic; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    Tips: Click each sentence to listen separately.
+                </p>
+            </section>
 
             <!-- Key Phrases -->
-            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color); margin-bottom: 2rem;">
-                <h3>🔑 Key Phrases</h3>
-                <ul style="list-style:none; padding:0; margin-top:1rem;">
+            <section>
+                <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.2rem;">🔑</span> Key Phrases
+                </h3>
+                <div style="display: grid; gap: 1rem;">
                     ${data.key_phrases.map(p => `
-                        <li style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color)">
-                            <div style="font-weight:600; color:var(--accent-color); margin-bottom:0.25rem;">${p.phrase_en}</div>
-                            <div style="font-size:0.9rem; margin-bottom:0.25rem;">${p.meaning_ja}</div>
-                            <div style="font-size:0.8rem; color:var(--text-secondary);">${p.usage_hint_ja}</div>
-                        </li>
+                        <div class="card" style="background: rgba(255, 255, 255, 0.03); padding: 1.25rem; border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color);">
+                            <div style="font-weight:700; color:var(--text-primary); margin-bottom:0.25rem;">${p.phrase_en}</div>
+                            <div style="font-size:0.95rem; color: var(--accent-color); margin-bottom:0.5rem;">${p.meaning_ja}</div>
+                            <div style="font-size:0.85rem; color:var(--text-secondary); line-height: 1.4;">${p.usage_hint_ja}</div>
+                        </div>
                     `).join('')}
-                </ul>
-            </div>
+                </div>
+            </section>
 
             <!-- Recall Test -->
-            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color); margin-bottom: 2rem;">
-                <h3>🧠 Recall Test</h3>
-                <p style="color:var(--text-secondary); margin-bottom:1rem;">次の要点を英語で言ってみましょう：</p>
-                <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:0.5rem;">
+            <section class="card" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.05), rgba(129, 140, 248, 0.05)); border: 1px solid var(--border-color);">
+                <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.2rem;">🧠</span> Recall Test
+                </h3>
+                <p style="color:var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.95rem;">ポイントを意識して英語で言ってみましょう：</p>
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 1.5rem; border-radius: 0.75rem; border: 1px dashed var(--border-color); line-height: 1.6;">
                     ${data.recall_test.prompt_ja}
                 </div>
-            </div>
+            </section>
         </div>
 
-        <!-- Actions -->
-        <div style="display:flex; gap:1rem; margin-top:2rem; margin-bottom:1.5rem; flex-wrap:wrap;">
-            <button class="btn btn-primary" style="flex:2;" onclick="window.saveNarrativeForReview()">💾 Save to Journal</button>
-            <button class="btn btn-secondary" style="flex:1;" onclick="window.copy()">📋 Copy</button>
-            <button class="btn btn-secondary" style="flex:1;" onclick="window.download()">⬇️ JSON</button>
+        <!-- Main Actions -->
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1rem; margin-top:3rem; margin-bottom:1.5rem;">
+            <button class="btn btn-primary" style="padding: 1.25rem;" onclick="window.saveNarrativeForReview()">💾 Save to Journal</button>
+            <button class="btn btn-secondary" style="padding: 1.25rem;" onclick="window.copy()">📋 Copy</button>
         </div>
 
-        <!-- Bottom Actions -->
+        <!-- Secondary Actions -->
         <div style="display:flex; gap:1rem;">
-            <button class="btn btn-secondary" style="flex:1;" onclick="window.newNarrative()">✨ New Entry</button>
-            <button class="btn btn-secondary" style="flex:1;" onclick="window.switchView('review')">📚 Review Dashboard</button>
+            <button class="btn btn-secondary" style="flex:1; opacity: 0.7;" onclick="window.newNarrative()">✨ New Entry</button>
+            <button class="btn btn-secondary" style="flex:1; opacity: 0.7;" onclick="window.switchView('review')">📚 Dashboard</button>
         </div>
     `;
     result.innerHTML = html;
 
-    // Populate textarea after innerHTML is set
+    // Sync content if editing was implemented (currently read-only interactive mode)
     const textarea = result.querySelector('.editable-narrative');
     if (textarea) {
-        textarea.value = data.narrative_en;
-
-        // Update state on change
         textarea.addEventListener('input', (e) => {
             state.narrative.narrative_en = e.target.value;
         });
