@@ -595,61 +595,69 @@ input[type="range"] {
     line-height: 1.8;
 }
 
-.sentence-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-    padding: 0.25rem;
-    border-radius: 0.5rem;
-    transition: background-color 0.2s ease;
-}
-
-.sentence-item:hover {
-    background: rgba(255, 255, 255, 0.03);
+/* Narrative Text Container */
+.narrative-text-container {
+    padding: 0.25rem 0;
 }
 
 .sentence-text {
     cursor: pointer;
-    flex: 1;
-    padding: 2px 4px;
+    padding: 2px 2px;
     border-radius: 4px;
     transition: all 0.2s ease;
+    display: inline;
+    line-height: 1.8;
+}
+
+.sentence-text:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--accent-color);
 }
 
 .sentence-text.playing {
     background: rgba(56, 189, 248, 0.2);
     color: var(--accent-color);
+    box-shadow: 0 1px 0 var(--accent-color);
 }
 
-.play-sentence-btn {
-    background: none !important;
-    border: 1px solid var(--border-color) !important;
-    color: var(--text-secondary) !important;
-    cursor: pointer;
-    padding: 0 !important;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50% !important;
-    transition: all 0.2s ease !important;
-    width: 28px !important;
-    height: 28px !important;
-    flex-shrink: 0;
-    margin-top: 4px;
+/* Key Phrases Details */
+.key-phrases-details summary::-webkit-details-marker {
+    display: none;
 }
 
-.play-sentence-btn:hover {
+.key-phrases-details[open] summary {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 0.5rem;
     color: var(--accent-color) !important;
-    border-color: var(--accent-color) !important;
-    background: rgba(56, 189, 248, 0.1) !important;
 }
 
-.play-sentence-btn svg {
-    width: 14px;
-    height: 14px;
-    fill: currentColor;
+/* Sticky Review Footer */
+.review-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem calc(0.75rem + env(safe-area-inset-bottom));
+    z-index: 1000;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+    animation: footerSlideUp 0.3s ease-out;
 }
+
+@keyframes footerSlideUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Hide Bottom Nav on Review Screen if overlapping (Optional safety) */
+/* Ideally we just ensure z-index covers it or JS hides it, but sticky footer has z-index 1000 */
 
 /* Authentication Styles */
 .auth-container {
