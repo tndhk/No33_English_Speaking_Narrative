@@ -183,51 +183,47 @@ async function renderStatsPage() {
           <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">続けた日数</div>
           <div style="font-size: 2rem; font-weight: bold;">${stats.longest_streak || 0} 日</div>
         </div>
-        <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">記憶定着率</div>
-          <div style="font-size: 2rem; font-weight: bold;">${srsStats.accuracy_rate || '0'}%</div>
-        </div>
     </div>
-
+  `;
 
   // Mastery timeline
   if (narratives.length > 0) {
     html += `
-    < h3 > 次の振り返り予定</h3>
+      <h3>次の振り返り予定</h3>
       <div style="background: #0f172a; padding: 1rem; border-radius: 1rem; margin-bottom: 2rem;">
-        `;
+    `;
 
-        const estimates = narratives
+    const estimates = narratives
       .filter(n => n.srs?.status !== 'mastered')
       .map(n => ({
-          date: window.srs?.estimateMasteryDate(n),
+        date: window.srs?.estimateMasteryDate(n),
         category: n.category
       }))
       .filter(e => e.date)
       .sort((a, b) => new Date(a.date) - new Date(b.date))
-        .slice(0, 10);
+      .slice(0, 10);
 
     if (estimates.length > 0) {
-          estimates.forEach(e => {
-            const date = new Date(e.date);
-            const daysAway = Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24));
-            const displayCat = formatCategory(e.category);
+      estimates.forEach(e => {
+        const date = new Date(e.date);
+        const daysAway = Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24));
+        const displayCat = formatCategory(e.category);
 
-            html += `
+        html += `
           <div style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
             <span>${displayCat}</span>
             <span style="color: ${daysAway <= 7 ? '#fbbf24' : '#60a5fa'};">${date.toLocaleDateString('ja-JP')} (${daysAway}日後)</span>
           </div>
         `;
-          });
+      });
     } else {
-          html += '<p style="color: var(--text-secondary); margin: 0;">次の振り返り予定はありません</p>';
+      html += '<p style="color: var(--text-secondary); margin: 0;">次の振り返り予定はありません</p>';
     }
 
-        html += '</div>';
-}
+    html += '</div>';
+  }
 
-container.innerHTML = html;
+  container.innerHTML = html;
 }
 
 /**
