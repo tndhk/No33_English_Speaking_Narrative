@@ -156,8 +156,8 @@ async function renderProfilePage() {
   const srsStats = window.srs?.getReviewStatistics(narratives) || {};
 
   // Get current user info safely
-  const user = window.auth?.currentUser || {};
-  const email = user.email || 'Guest User';
+  const user = window.auth?.getCurrentUser() || {};
+  const email = user?.email || 'Guest User';
 
   // Calculate stats by category
   const byCategory = {};
@@ -423,7 +423,7 @@ async function renderFilteredHistory(narratives) {
 
 // Global functions for UI navigation
 window.renderReviewDashboard = renderReviewDashboard;
-window.renderStatsPage = renderStatsPage;
+window.renderProfilePage = renderProfilePage;
 window.renderHistoryPage = renderHistoryPage;
 
 window.goToReviewDashboard = async function () {
@@ -433,9 +433,9 @@ window.goToReviewDashboard = async function () {
 };
 
 window.goToStats = async function () {
-  window.state.currentView = 'stats';
+  window.state.currentView = 'profile';
   await window.updateNavigation();
-  await window.renderStatsPage();
+  await window.renderProfilePage();
 };
 
 window.goToHistory = async function () {
