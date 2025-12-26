@@ -415,6 +415,119 @@ window.selectDate = (dateStr) => {
 };
 
 /**
+ * Render narrative detail view
+ */
+async function renderNarrativeDetailView(narrativeId) {
+  const container = document.getElementById('result-container');
+  if (!container) return;
+
+  // Trigger animation
+  container.classList.remove('view-enter');
+  void container.offsetWidth;
+  container.classList.add('view-enter');
+
+  const narrative = await window.storage?.getNarrativeById(narrativeId);
+  if (!narrative) {
+    container.innerHTML = '<p style="color:var(--text-secondary)">Narrative not found.</p>';
+    return;
+  }
+
+  const dateStr = new Date(narrative.created_at).toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  let html = `
+    <!-- Back Button -->
+    <div style="margin-bottom: 1.5rem;">
+      <button class="secondary" onclick="window.goToHistory()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+        ← カレンダーに戻る
+      </button>
+    </div>
+
+    <!-- Header -->
+    <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <div style="font-size: 1.3rem; font-weight: bold;">${dateStr}</div>
+        <div style="background: var(--accent-color); color: white; padding: 0.4rem 0.8rem; border-radius: 0.5rem; font-size: 0.9rem;">
+          ${formatCategory(narrative.category)}
+        </div>
+      </div>
+    </div>
+
+    <!-- English Narrative -->
+    <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
+      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">📝 英文</h3>
+      <div style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; line-height: 1.8; white-space: pre-wrap;">
+        ${narrative.narrative_en}
+      </div>
+    </div>
+
+    <!-- Key Phrases -->
+    <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
+      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">💡 キーフレーズ</h3>
+      <div style="display: grid; gap: 0.75rem;">
+  `;
+
+  if (narrative.key_phrases && narrative.key_phrases.length > 0) {
+    narrative.key_phrases.forEach(p => {
+      html += `
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 0.75rem; border-radius: 0.5rem; border-left: 3px solid var(--accent-color);">
+          <div style="font-weight: bold; margin-bottom: 0.25rem;">${p.phrase_en}</div>
+          <div style="color: var(--text-secondary); font-size: 0.9rem;">${p.meaning_ja}</div>
+        </div>
+      `;
+    });
+  } else {
+    html += '<p style="color: var(--text-secondary); margin: 0;">キーフレーズはありません</p>';
+  }
+
+  html += `
+      </div>
+    </div>
+
+    <!-- Recall Test -->
+    <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
+      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">🎯 復習テスト</h3>
+      <div style="font-size: 1rem; line-height: 1.6;">
+        ${narrative.recall_test?.prompt_ja || 'テストプロンプトはありません'}
+      </div>
+    </div>
+
+    <!-- SRS Information -->
+    <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
+      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">📊 復習情報</h3>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+        <div>
+          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">ステータス</div>
+          <div style="font-size: 1.1rem; font-weight: bold;">${narrative.srs?.status || 'new'}</div>
+        </div>
+        <div>
+          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">復習回数</div>
+          <div style="font-size: 1.1rem; font-weight: bold;">${narrative.srs?.review_count || 0}</div>
+        </div>
+        <div style="grid-column: 1 / -1;">
+          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">次の復習</div>
+          <div style="font-size: 1.1rem; font-weight: bold;">
+            ${narrative.srs?.next_review_date ? new Date(narrative.srs.next_review_date).toLocaleDateString('ja-JP') : '未設定'}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+      <button class="secondary" onclick="window.goToHistory()" style="flex: 1;">
+        カレンダーに戻る
+      </button>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+/**
  * Render filtered history list (Legacy - kept for compatibility if needed, but unused in calendar view)
  */
 async function renderFilteredHistory(narratives) {
@@ -425,6 +538,7 @@ async function renderFilteredHistory(narratives) {
 window.renderReviewDashboard = renderReviewDashboard;
 window.renderProfilePage = renderProfilePage;
 window.renderHistoryPage = renderHistoryPage;
+window.renderNarrativeDetailView = renderNarrativeDetailView;
 
 window.goToReviewDashboard = async function () {
   window.state.currentView = 'review';
@@ -556,34 +670,13 @@ window.filterByCategory = async function (category) {
 };
 
 window.viewNarrativeDetails = async function (id) {
-  const n = await window.storage?.getNarrativeById(id);
-  if (!n) return;
-
-  const details = `
-【${n.category?.toUpperCase()}】${n.created_at?.split('T')[0]}
-
-【英文】
-${n.narrative_en}
-
-【キーフレーズ】
-${n.key_phrases.map(p => `• ${p.phrase_en} - ${p.meaning_ja}`).join('\n')}
-
-【復習テスト】
-${n.recall_test.prompt_ja}
-
-【復習情報】
-ステータス: ${n.srs?.status}
-復習回数: ${n.srs?.review_count}
-次の復習: ${n.srs?.next_review_date}
-  `;
-
-  const textarea = document.createElement('textarea');
-  textarea.value = details;
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand('copy');
-  document.body.removeChild(textarea);
-  alert('詳細をコピーしました！');
+  // Navigate to detail view
+  window.showLoading('Loading details...');
+  try {
+    await window.renderNarrativeDetailView(id);
+  } finally {
+    window.hideLoading();
+  }
 };
 
 window.deleteNarrative = async function (id) {
