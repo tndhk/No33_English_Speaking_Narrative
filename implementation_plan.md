@@ -4,19 +4,24 @@
 
 ## 変更内容
 
-### 1. `src/stats.js`
-- `renderReviewDashboard` 関数内：
-    - 画面下部の統計セクション（`続けた日数`、`思い出の数`、`読んだ回数` を含む `div` ブロック）を削除。
-    - 不要になった `stats` オブジェクトの取得（`getSRSStats`）を、他に用途がなければ削除検討（今回は `renderReviewDashboard` 内では統計表示にのみ使用されているため削除可能）。
-- `renderProfilePage` 関数内：
-    - 統計カードセクション（`書いた日記`、`振り返り回数`、`続けた日数` を含む `grid` ブロック）を削除。
-    - ユーザー情報と「次の振り返り予定」のみを表示するようにシンプル化。
+### 1. `src/auth.js`
+- `renderAuthUI` 関数内：
+    - ログイン状態の際、空にするのではなく、右上に小さくユーザーのメールアドレスと「Logout」ボタンを表示するように変更。
+    - 既存の `style.css` にある `.auth-logged-in` や `.user-info` クラスを活用。
 
-### 2. `src/review-session.js` (Optional/Confirmation needed)
-- `renderSessionComplete` 関数内：
-    - ここにも「振り返り数」や「連続復習日数」が表示されています。
-    - コンテキスト的に、これらも不要かどうか検討。ユーザーのリクエストはダッシュボードの表示を指している可能性が高いですが、一貫性のためにこちらも簡素化するか確認。
-    - 一旦、リクエストにある明確な3項目をメインの導線から削除することに集中します。
+### 2. `src/index.html`
+- デスクトップ用ナビゲーション (`#desktop-nav`) から「Profile」タブを削除。
+- モバイル用ナビゲーション (`#bottom-nav`) から「Profile」タブを削除。
+- アプリ全体の構造を「書く」「振り返り」「カレンダー」の3本柱に集約。
+
+### 3. `src/stats.js`
+- `renderProfilePage` 関数を完全に削除。
+- `window.renderProfilePage` へのエクスポートを削除。
+- 以前のタスクで検討していた統計セクションの削除も含まれます。
+
+### 4. `src/main.js` & `src/constants.js`
+- `VIEW.PROFILE` に関連するロジックを削除。
+- `handleViewSwitch` 内のプロフィール表示処理を削除。
 
 ## 影響範囲
 - レビューダッシュボードの最下部がスッキリします。

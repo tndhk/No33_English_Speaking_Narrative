@@ -179,9 +179,27 @@ export function renderAuthUI(container) {
   }
 
   if (authState.user) {
-    // User is logged in
-    // Header is kept clean; user info is in Profile page.
-    container.innerHTML = '';
+    // User is logged in - show compact info in header
+    const wrapper = document.createElement('div');
+    wrapper.className = 'auth-container auth-logged-in';
+
+    const userInfo = document.createElement('div');
+    userInfo.className = 'user-info';
+
+    const email = document.createElement('span');
+    email.className = 'user-email';
+    email.textContent = authState.user.email;
+
+    const logoutBtn = document.createElement('button');
+    logoutBtn.id = 'logout-btn';
+    logoutBtn.className = 'secondary';
+    logoutBtn.textContent = 'Logout';
+    logoutBtn.onclick = () => signOut();
+
+    userInfo.appendChild(email);
+    userInfo.appendChild(logoutBtn);
+    wrapper.appendChild(userInfo);
+    container.appendChild(wrapper);
   } else {
     // User is not logged in
     const wrapper = document.createElement('div');

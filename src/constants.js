@@ -6,10 +6,7 @@
 export const VIEW = {
     GENERATE: 'generate',
     REVIEW: 'review',
-    HISTORY: 'history',
-    STATS: 'stats',
-    EXPORT: 'export',
-    PROFILE: 'profile'
+    HISTORY: 'history'
 };
 
 export const SETTINGS_DEFAULTS = {

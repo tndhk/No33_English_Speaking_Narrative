@@ -140,95 +140,6 @@ async function renderReviewDashboard() {
 /**
  * Render detailed statistics screen
  */
-async function renderProfilePage() {
-  const container = document.getElementById('result-container');
-  if (!container) return;
-
-  // Trigger animation
-  container.classList.remove('view-enter');
-  void container.offsetWidth;
-  container.classList.add('view-enter');
-
-  const narratives = (await window.storage?.getAllNarratives()) || [];
-  const stats = (await window.storage?.getSRSStats()) || {};
-  const srsStats = window.srs?.getReviewStatistics(narratives) || {};
-
-  // Get current user info safely
-  const user = window.auth?.getCurrentUser() || {};
-  const email = user?.email || 'Guest User';
-
-  // Calculate stats by category
-  const byCategory = {};
-  narratives.forEach(n => {
-    const cat = n.category || 'other';
-    if (!byCategory[cat]) {
-      byCategory[cat] = { new: 0, learning: 0, mastered: 0, total: 0 };
-    }
-    byCategory[cat].total++;
-    if (n.srs?.status === 'new') byCategory[cat].new++;
-    else if (n.srs?.status === 'learning') byCategory[cat].learning++;
-    else if (n.srs?.status === 'mastered') byCategory[cat].mastered++;
-  });
-
-  let html = `
-    <!-- User Profile Card -->
-    <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--accent-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                👤
-            </div>
-            <div>
-                <div style="font-size: 0.9rem; color: var(--text-secondary);">Logged in as</div>
-                <div style="font-weight: bold; font-size: 1.1rem;">${email}</div>
-            </div>
-        </div>
-        <button class="secondary" onclick="window.auth.signOut()" style="margin: 0; padding: 0.5rem 1rem; font-size: 0.9rem;">
-            Logout
-        </button>
-    </div>
-
-    </div>
-  `;
-
-  // Mastery timeline
-  if (narratives.length > 0) {
-    html += `
-      <h3>次の振り返り予定</h3>
-      <div style="background: #0f172a; padding: 1rem; border-radius: 1rem; margin-bottom: 2rem;">
-    `;
-
-    const estimates = narratives
-      .filter(n => n.srs?.status !== 'mastered')
-      .map(n => ({
-        date: window.srs?.estimateMasteryDate(n),
-        category: n.category
-      }))
-      .filter(e => e.date)
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .slice(0, 10);
-
-    if (estimates.length > 0) {
-      estimates.forEach(e => {
-        const date = new Date(e.date);
-        const daysAway = Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24));
-        const displayCat = formatCategory(e.category);
-
-        html += `
-          <div style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
-            <span>${displayCat}</span>
-            <span style="color: ${daysAway <= 7 ? '#fbbf24' : '#60a5fa'};">${date.toLocaleDateString('ja-JP')} (${daysAway}日後)</span>
-          </div>
-        `;
-      });
-    } else {
-      html += '<p style="color: var(--text-secondary); margin: 0;">次の振り返り予定はありません</p>';
-    }
-
-    html += '</div>';
-  }
-
-  container.innerHTML = html;
-}
 
 /**
  * Render history/library view
@@ -519,7 +430,6 @@ async function renderFilteredHistory(narratives) {
 
 // Global functions for UI navigation
 window.renderReviewDashboard = renderReviewDashboard;
-window.renderProfilePage = renderProfilePage;
 window.renderHistoryPage = renderHistoryPage;
 window.renderNarrativeDetailView = renderNarrativeDetailView;
 
@@ -529,11 +439,6 @@ window.goToReviewDashboard = async function () {
   await window.renderReviewDashboard();
 };
 
-window.goToStats = async function () {
-  window.state.currentView = 'profile';
-  await window.updateNavigation();
-  await window.renderProfilePage();
-};
 
 window.goToHistory = async function () {
   window.state.currentView = 'history';

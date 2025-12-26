@@ -690,7 +690,6 @@ async function handleViewSwitch(view, wizard, result) {
 
         if (view === VIEW.REVIEW && window.renderReviewDashboard) await window.renderReviewDashboard();
         if (view === VIEW.HISTORY && window.renderHistoryPage) await window.renderHistoryPage();
-        if (view === VIEW.PROFILE && window.renderProfilePage) await window.renderProfilePage();
     }
 }
 
