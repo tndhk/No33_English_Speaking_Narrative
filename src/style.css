@@ -373,6 +373,11 @@ button.secondary:hover {
         width: 100%;
     }
 
+    #step-content {
+        padding-bottom: 8rem;
+        /* Significant padding to prevent sticky buttons overlap */
+    }
+
     /* Sticky action buttons for wizard steps 1 and 2 */
     .sticky-actions {
         position: fixed !important;
