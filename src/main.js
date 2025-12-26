@@ -445,6 +445,7 @@ function renderResult() {
         <div class="result-grid" style="display: flex; flex-direction: column; gap: 2rem;">
             ${renderNarrativeSection(sentences, data)}
             ${renderKeyPhrases(data.key_phrases)}
+            ${renderAlternatives(data.alternatives)}
             ${renderRecallTest(data.recall_test)}
         </div>
         ${renderResultActions()}
@@ -513,6 +514,29 @@ function renderKeyPhrases(phrases) {
                         <div style="font-weight:700; color:var(--text-primary); margin-bottom:0.25rem;">${p.phrase_en}</div>
                         <div style="font-size:0.95rem; color: var(--accent-color); margin-bottom:0.5rem;">${p.meaning_ja}</div>
                         <div style="font-size:0.85rem; color:var(--text-secondary); line-height: 1.4;">${p.usage_hint_ja}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </section>
+    `;
+}
+
+function renderAlternatives(alternatives) {
+    if (!alternatives || alternatives.length === 0) return '';
+    return `
+        <section>
+            <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.2rem;">🔄</span> Alternative Expressions
+            </h3>
+            <div style="display: grid; gap: 1rem;">
+                ${alternatives.map(alt => `
+                    <div class="card" style="background: rgba(255, 255, 255, 0.03); padding: 1.25rem; border: 1px solid var(--border-color); border-left: 4px solid #f59e0b;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="color: var(--text-secondary); font-size: 0.9rem;">${alt.original_en}</span>
+                            <span style="color: var(--text-tertiary);">→</span>
+                            <span style="color: #f59e0b; font-weight: 600;">${alt.alternative_en}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">${alt.nuance_ja}</div>
                     </div>
                 `).join('')}
             </div>
