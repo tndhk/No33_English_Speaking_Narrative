@@ -35,15 +35,34 @@ async function renderReviewDashboard() {
   const stats = (await window.storage?.getSRSStats()) || {};
   const narratives = (await window.storage?.getAllNarratives()) || [];
 
-  // Pick a "Featured Memory" (e.g., from exactly 1 year ago, or just random)
+  // Pick a "Featured Memory" with priority:
+  // 1. "Years ago today" (same month/day from past years)
+  // 2. Reviews due today
+  // 3. Random memory
   let featuredTitle = "";
   let featuredNarrative = null;
 
   if (narratives.length > 0) {
-    if (dueToday.length > 0) {
+    const today = new Date();
+    const todayMonthDay = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    // Look for "years ago today" entries
+    const yearsAgoNarratives = narratives.filter(n => {
+      const createdDate = new Date(n.created_at);
+      const createdMonthDay = `${String(createdDate.getMonth() + 1).padStart(2, '0')}-${String(createdDate.getDate()).padStart(2, '0')}`;
+      const yearsDiff = today.getFullYear() - createdDate.getFullYear();
+      return createdMonthDay === todayMonthDay && yearsDiff > 0;
+    }).sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Oldest first
+
+    if (yearsAgoNarratives.length > 0) {
+      // Prioritize "years ago today"
+      featuredNarrative = yearsAgoNarratives[0];
+      const yearsAgo = today.getFullYear() - new Date(featuredNarrative.created_at).getFullYear();
+      featuredTitle = `${yearsAgo}年前の今日`;
+    } else if (dueToday.length > 0) {
       // If there are reviews due, pick the first one
       featuredNarrative = dueToday[0];
-      featuredTitle = "覚えていますか？";
+      featuredTitle = "読み返してみませんか？";
     } else {
       // Random memory
       const idx = Math.floor(Math.random() * narratives.length);
@@ -489,26 +508,26 @@ async function renderNarrativeDetailView(narrativeId) {
 
     <!-- Recall Test -->
     <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
-      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">🎯 復習テスト</h3>
+      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">🎯 この日記のポイント</h3>
       <div style="font-size: 1rem; line-height: 1.6;">
-        ${narrative.recall_test?.prompt_ja || 'テストプロンプトはありません'}
+        ${narrative.recall_test?.prompt_ja || 'ポイントはありません'}
       </div>
     </div>
 
     <!-- SRS Information -->
     <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
-      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">📊 復習情報</h3>
+      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">📊 振り返り情報</h3>
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
         <div>
           <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">ステータス</div>
           <div style="font-size: 1.1rem; font-weight: bold;">${narrative.srs?.status || 'new'}</div>
         </div>
         <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">復習回数</div>
+          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">振り返り回数</div>
           <div style="font-size: 1.1rem; font-weight: bold;">${narrative.srs?.review_count || 0}</div>
         </div>
         <div style="grid-column: 1 / -1;">
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">次の復習</div>
+          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">次回おすすめ</div>
           <div style="font-size: 1.1rem; font-weight: bold;">
             ${narrative.srs?.next_review_date ? new Date(narrative.srs.next_review_date).toLocaleDateString('ja-JP') : '未設定'}
           </div>
@@ -570,7 +589,7 @@ window.startReview = async function () {
   try {
     const success = await window.initReviewSession({ order: 'oldest_first' });
     if (!success) {
-      alert('復習するナラティブがありません');
+      alert('振り返る日記がありません');
       return;
     }
     window.renderReviewSession();

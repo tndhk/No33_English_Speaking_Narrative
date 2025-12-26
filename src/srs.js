@@ -7,8 +7,8 @@
 // Make SRS available globally via window.srs namespace
 window.srs = window.srs || {};
 
-// SRS intervals in days: Day 0 / 1 / 3 / 7 / 14 / 30
-const SRS_INTERVALS = [0, 1, 3, 7, 14, 30];
+// SRS intervals in days: 1 / 3 / 7 / 30 (simplified for diary reflection)
+const SRS_INTERVALS = [1, 3, 7, 30];
 
 // Quality ratings for user feedback
 const REVIEW_QUALITY = {
@@ -306,12 +306,10 @@ function getRandomReviewOrder(narratives) {
  */
 function getIntervalName(intervalIndex) {
   const names = [
-    'Today (新規)',
     'Tomorrow (1日後)',
-    '3 days later',
-    'Week later',
-    '2 weeks later',
-    'Month later'
+    '3 days later (3日後)',
+    'Week later (1週間後)',
+    'Month later (1ヶ月後)'
   ];
   return names[intervalIndex] || 'Unknown';
 }
