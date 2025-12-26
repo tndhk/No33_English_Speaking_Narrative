@@ -360,18 +360,18 @@ function renderResult() {
         
         <div class="result-grid">
             <!-- Narrative (Main) -->
-            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color);">
+            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color); margin-bottom: 2rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                     <h3>📖 Generated Narrative</h3>
                      <div style="display:flex; gap:0.5rem;">
-                        <button class="icon-btn" onclick="window.speakText(document.querySelector('.editable-narrative').value)">🔊 Play</button>
+                        <button class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem;" onclick="window.speak(document.querySelector('.editable-narrative').value)">🔊 Play</button>
                     </div>
                 </div>
                 <textarea class="editable-narrative" style="width:100%; min-height:200px; background:transparent; border:none; color:inherit; font-size:1.1rem; line-height:1.6; resize:vertical; padding:0.5rem;"></textarea>
             </div>
 
             <!-- Key Phrases -->
-            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color);">
+            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color); margin-bottom: 2rem;">
                 <h3>🔑 Key Phrases</h3>
                 <ul style="list-style:none; padding:0; margin-top:1rem;">
                     ${data.key_phrases.map(p => `
@@ -385,7 +385,7 @@ function renderResult() {
             </div>
 
             <!-- Recall Test -->
-            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color);">
+            <div class="card" style="background: #1e293b; border: 1px solid var(--border-color); margin-bottom: 2rem;">
                 <h3>🧠 Recall Test</h3>
                 <p style="color:var(--text-secondary); margin-bottom:1rem;">次の要点を英語で言ってみましょう：</p>
                 <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:0.5rem;">
@@ -396,126 +396,30 @@ function renderResult() {
 
         <!-- Actions -->
         <div style="display:flex; gap:1rem; margin-top:2rem; margin-bottom:1.5rem; flex-wrap:wrap;">
-            <button class="primary" style="flex:1;" onclick="window.saveNarrativeForReview()">💾 Save to Journal</button>
-            <button class="secondary" style="flex:1;" onclick="window.copy()">📋 Copy</button>
-            <button class="secondary" style="flex:1;" onclick="window.download()">⬇️ JSON</button>
+            <button class="btn btn-primary" style="flex:2;" onclick="window.saveNarrativeForReview()">💾 Save to Journal</button>
+            <button class="btn btn-secondary" style="flex:1;" onclick="window.copy()">📋 Copy</button>
+            <button class="btn btn-secondary" style="flex:1;" onclick="window.download()">⬇️ JSON</button>
         </div>
 
         <!-- Bottom Actions -->
         <div style="display:flex; gap:1rem;">
-            <button class="secondary" style="flex:1;" onclick="window.newNarrative()">✨ New Entry</button>
-            <button class="secondary" style="flex:1;" onclick="window.switchView('review')">📚 Review Dashboard</button>
+            <button class="btn btn-secondary" style="flex:1;" onclick="window.newNarrative()">✨ New Entry</button>
+            <button class="btn btn-secondary" style="flex:1;" onclick="window.switchView('review')">📚 Review Dashboard</button>
         </div>
     `;
     result.innerHTML = html;
 
     // Populate textarea after innerHTML is set
     const textarea = result.querySelector('.editable-narrative');
-    textarea.value = data.narrative_en;
+    if (textarea) {
+        textarea.value = data.narrative_en;
 
-    // Update state on change
-    textarea.addEventListener('input', (e) => {
-        state.narrative.narrative_en = e.target.value;
-    });
-
-    narrativeBox.appendChild(textarea);
-    result.appendChild(narrativeBox);
-
-    // Actions
-    const actions = document.createElement('div');
-    actions.className = 'actions';
-    actions.style.cssText = 'display:flex; gap:1rem; margin-bottom:2rem; flex-wrap:wrap;';
-
-    const playBtn = document.createElement('button');
-    playBtn.className = 'primary';
-    playBtn.textContent = 'Play Full';
-    playBtn.onclick = () => window.speak();
-    playBtn.style.flex = '1';
-
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'secondary';
-    copyBtn.textContent = 'Copy';
-    copyBtn.onclick = () => window.copy();
-    copyBtn.style.flex = '1';
-
-    const jsonBtn = document.createElement('button');
-    jsonBtn.className = 'secondary';
-    jsonBtn.textContent = 'JSON';
-    jsonBtn.onclick = () => window.download();
-    jsonBtn.style.flex = '1';
-
-    actions.append(playBtn, copyBtn, jsonBtn);
-    result.appendChild(actions);
-
-    const saveBtn = document.createElement('button');
-    saveBtn.className = 'primary';
-    saveBtn.textContent = '💾 Save to Journal';
-    saveBtn.style.cssText = 'width:100%; margin-bottom:1.5rem;';
-    saveBtn.onclick = () => window.saveNarrativeForReview();
-    result.appendChild(saveBtn);
-
-    // Key Phrases
-    const h3Phrases = document.createElement('h3');
-    h3Phrases.textContent = 'Key Phrases';
-    result.appendChild(h3Phrases);
-
-    const ul = document.createElement('ul');
-    ul.style.cssText = 'list-style:none; padding:0; margin-bottom:2rem;';
-
-    data.key_phrases.forEach(p => {
-        const li = document.createElement('li');
-        li.style.cssText = 'margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color)';
-
-        const phraseDiv = document.createElement('div');
-        phraseDiv.style.cssText = 'font-weight:600; color:var(--accent-color)';
-        phraseDiv.textContent = p.phrase_en;
-
-        const meaningDiv = document.createElement('div');
-        meaningDiv.style.fontSize = '0.9rem';
-        meaningDiv.textContent = p.meaning_ja;
-
-        const usageDiv = document.createElement('div');
-        usageDiv.style.cssText = 'font-size:0.8rem; color:var(--text-secondary)';
-        usageDiv.textContent = p.usage_hint_ja;
-
-        li.append(phraseDiv, meaningDiv, usageDiv);
-        ul.appendChild(li);
-    });
-    result.appendChild(ul);
-
-    // Recall Test
-    const h3Recall = document.createElement('h3');
-    h3Recall.textContent = 'Recall Test';
-    result.appendChild(h3Recall);
-
-    const pRecall = document.createElement('p');
-    pRecall.style.cssText = 'color:var(--text-secondary); margin-bottom:1rem;';
-    pRecall.textContent = '次の要点を英語で言ってみましょう：';
-    result.appendChild(pRecall);
-
-    const promptDiv = document.createElement('div');
-    promptDiv.style.cssText = 'background:rgba(255,255,255,0.05); padding:1rem; border-radius:0.5rem; margin-bottom:1.5rem;';
-    promptDiv.textContent = data.recall_test.prompt_ja;
-    result.appendChild(promptDiv);
-
-    // Bottom Actions
-    const bottomActions = document.createElement('div');
-    bottomActions.style.cssText = 'display:flex; gap:1rem;';
-
-    const newBtn = document.createElement('button');
-    newBtn.className = 'secondary';
-    newBtn.textContent = 'New';
-    newBtn.style.flex = '1';
-    newBtn.onclick = () => window.newNarrative();
-
-    const reviewBtn = document.createElement('button');
-    reviewBtn.className = 'secondary';
-    reviewBtn.textContent = 'Review';
-    reviewBtn.style.flex = '1';
-    reviewBtn.onclick = () => window.goToReviewDashboard();
-
-    bottomActions.append(newBtn, reviewBtn);
-    result.appendChild(bottomActions);
+        // Update state on change
+        textarea.addEventListener('input', (e) => {
+            state.narrative.narrative_en = e.target.value;
+        });
+    }
+}
 }
 
 window.speak = (text, index, fullTextOverride) => {
