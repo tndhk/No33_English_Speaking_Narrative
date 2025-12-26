@@ -299,10 +299,11 @@ button.secondary:hover {
 
 @media (max-width: 480px) {
     body {
-        padding: 1rem 1rem 6rem;
+        padding: 1rem 1rem calc(8rem + env(safe-area-inset-bottom));
         /* Add bottom padding for nav bar */
         align-items: flex-start;
         /* Prevent vertical centering affecting long content */
+        min-height: 100dvh;
     }
 
     #desktop-nav {
