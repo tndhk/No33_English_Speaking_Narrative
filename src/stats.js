@@ -121,9 +121,13 @@ async function renderReviewDashboard() {
   } else {
     if (featuredNarrative) {
       html += `
-          <div style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">
-            <p>🎉 今日の振り返りは完了しています</p>
-            <button class="secondary" onclick="window.startReview({ all: true })" style="margin-top:0.5rem;">自由に読み返す</button>
+          <div style="text-align: center;">
+            <button class="primary" onclick="window.startReview({ all: true })" style="width: 100%; padding: 1.25rem; font-size: 1.1rem; margin-bottom: 1rem; border-radius: 1rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+              ✨ 自由に読み返す
+            </button>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 2rem;">
+              過去の日記をランダムに振り返ります
+            </p>
           </div>
         `;
     }
