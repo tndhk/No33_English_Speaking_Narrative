@@ -189,7 +189,7 @@ button.secondary:hover {
     }
 }
 
-/* Navigation Tabs */
+/* Navigation Tabs (Desktop) */
 .nav-tabs {
     display: flex;
     gap: 0.5rem;
@@ -235,6 +235,107 @@ button.secondary:hover {
     border-radius: 0.375rem;
     font-size: 0.75rem;
     font-weight: bold;
+}
+
+/* Bottom Navigation (Mobile) */
+.bottom-nav {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border-color);
+    padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
+    /* grid-template-columns set in media query */
+    justify-content: space-around;
+    z-index: 1000;
+}
+
+.bottom-nav-item {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+.bottom-nav-item .icon {
+    font-size: 1.5rem;
+    margin-bottom: 2px;
+}
+
+.bottom-nav-item.active {
+    color: var(--accent-color);
+}
+
+.bottom-nav-item:hover {
+    background: none;
+    color: var(--text-primary);
+}
+
+.icon-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.badge-dot {
+    position: absolute;
+    top: 0;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 1px solid var(--bg-color);
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 1rem 1rem 6rem;
+        /* Add bottom padding for nav bar */
+        align-items: flex-start;
+        /* Prevent vertical centering affecting long content */
+    }
+
+    #desktop-nav {
+        display: none !important;
+    }
+
+    .bottom-nav {
+        display: flex;
+    }
+
+    header {
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Make user info more compact in header if visible */
+    .auth-logged-in {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
+
+    /* Full width cards on very small screens */
+    #app {
+        max-width: 100%;
+        width: 100%;
+    }
 }
 
 /* Review Session Styles */

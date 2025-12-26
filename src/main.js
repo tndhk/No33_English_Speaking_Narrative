@@ -642,6 +642,7 @@ window.switchView = async (view) => {
  * Update navigation tabs to show active state
  */
 window.updateNavigation = async () => {
+    // Desktop Nav
     const navTabs = document.querySelectorAll('.nav-tab');
     navTabs.forEach(tab => {
         if (tab.dataset.view === state.currentView) {
@@ -651,15 +652,38 @@ window.updateNavigation = async () => {
         }
     });
 
+    // Mobile Bottom Nav
+    const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+    bottomNavItems.forEach(item => {
+        if (item.dataset.view === state.currentView) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+
     // Update due badge
     const dueNarratives = (await window.storage?.getNarrativesDueToday()) || [];
-    const badge = document.getElementById('due-badge');
-    if (badge) {
-        if (dueNarratives.length > 0) {
-            badge.style.display = 'inline-block';
-            badge.textContent = dueNarratives.length;
+    const count = dueNarratives.length;
+
+    // Desktop Badge
+    const badgeDesktop = document.getElementById('due-badge-desktop');
+    if (badgeDesktop) {
+        if (count > 0) {
+            badgeDesktop.style.display = 'inline-block';
+            badgeDesktop.textContent = count;
         } else {
-            badge.style.display = 'none';
+            badgeDesktop.style.display = 'none';
+        }
+    }
+
+    // Mobile Badge (Red dot only)
+    const badgeMobile = document.getElementById('due-badge-mobile');
+    if (badgeMobile) {
+        if (count > 0) {
+            badgeMobile.style.display = 'block';
+        } else {
+            badgeMobile.style.display = 'none';
         }
     }
 };
