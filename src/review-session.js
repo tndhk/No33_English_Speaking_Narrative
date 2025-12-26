@@ -226,55 +226,24 @@ function renderReviewSession() {
   const progress = getSessionProgress();
   const questionsLines = narrative.recall_test.prompt_ja.split('\n');
 
-  // Header Section
+  // Header Section (Simplified)
   const headerDiv = document.createElement('div');
-  headerDiv.style.marginBottom = '2rem';
+  headerDiv.style.marginBottom = '1.5rem';
 
   const titleRow = document.createElement('div');
-  titleRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;';
+  titleRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center;';
 
   const title = document.createElement('h2');
   title.style.margin = '0';
-  title.textContent = '振り返り';
+  title.style.fontSize = '1.25rem';
+  title.textContent = 'Day ' + (reviewSession.currentIndex + 1);
 
-  const endBtn = document.createElement('button');
-  endBtn.className = 'secondary';
-  endBtn.style.padding = '0.5rem 1rem';
-  endBtn.textContent = '終了';
-  endBtn.onclick = () => window.endReviewClick();
-
-  titleRow.append(title, endBtn);
+  titleRow.append(title);
+  headerDiv.append(titleRow);
+  container.appendChild(headerDiv);
 
   // Add padding to container to prevent content from being hidden behind sticky footer
   container.style.paddingBottom = '110px';
-
-  // Progress Bar
-  const progressContainer = document.createElement('div');
-  progressContainer.style.cssText = 'background: #0f172a; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;';
-
-  const progressTextRow = document.createElement('div');
-  progressTextRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;';
-
-  const progressLabel = document.createElement('span');
-  progressLabel.textContent = '進捗';
-
-  const progressValue = document.createElement('span');
-  progressValue.style.fontWeight = 'bold';
-  progressValue.textContent = `${progress.current} / ${progress.total}`;
-
-  progressTextRow.append(progressLabel, progressValue);
-
-  const progressBarBg = document.createElement('div');
-  progressBarBg.style.cssText = 'width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;';
-
-  const progressBarFill = document.createElement('div');
-  progressBarFill.style.cssText = `width: ${progress.percentage}%; height: 100%; background: var(--accent-color); transition: width 0.3s;`;
-
-  progressBarBg.appendChild(progressBarFill);
-  progressContainer.append(progressTextRow, progressBarBg);
-
-  headerDiv.append(titleRow, progressContainer);
-  container.appendChild(headerDiv);
 
   // Journal Entry Card (Combined View)
   const card = document.createElement('div');
@@ -287,16 +256,31 @@ function renderReviewSession() {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   `;
 
-  // 1. Japanese Context (Top)
+  // 1. Context (Top) - Prioritize User Answers
   const jpContext = document.createElement('div');
   jpContext.style.cssText = 'margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px dashed rgba(255,255,255,0.1);';
 
   const jpLabel = document.createElement('div');
   jpLabel.style.cssText = 'font-size: 0.85rem; color: var(--accent-color); margin-bottom: 0.5rem; font-weight: bold; letter-spacing: 0.05em;';
-  jpLabel.textContent = '💭 MEMORY';
+  jpLabel.textContent = '📅 CONTEXT';
   jpContext.appendChild(jpLabel);
 
-  questionsLines.forEach(line => {
+  let contextText = '';
+  if (narrative.user_answers && narrative.user_answers.length > 0 && narrative.user_answers.some(a => a.trim())) {
+    // Join user provided answers
+    contextText = narrative.user_answers.filter(a => a && a.trim()).join('\n');
+  } else {
+    // Fallback to recall prompt, cleaning up instructional suffix
+    contextText = narrative.recall_test.prompt_ja
+      .replace(/について教えてください[。？]?/g, '')
+      .replace(/書いてみましょう[。？]?/g, '')
+      .replace(/書いてみよう[。？]?/g, '')
+      .replace(/教えて[。？]?/g, '')
+      .trim();
+  }
+
+  const contextLines = contextText.split('\n');
+  contextLines.forEach(line => {
     if (line.trim()) {
       const p = document.createElement('p');
       p.style.cssText = 'margin-bottom: 0.5rem; line-height: 1.6; color: var(--text-secondary); font-size: 0.95rem;';
@@ -368,65 +352,21 @@ function renderReviewSession() {
 
   container.appendChild(card);
 
-  // Rating Buttons (Sticky Footer)
+  // Rating Buttons (Sticky Footer) - Single Action
   const ratingDiv = document.createElement('div');
   ratingDiv.className = 'review-footer';
 
   const ratingInner = document.createElement('div');
-  ratingInner.style.cssText = 'max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem;';
+  ratingInner.style.cssText = 'max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem;';
 
-  const ratingLabel = document.createElement('p');
-  ratingLabel.style.cssText = 'text-align: center; font-size: 0.8rem; color: var(--text-secondary); margin: 0;';
-  ratingLabel.textContent = '読み終わりましたか？';
-  ratingInner.appendChild(ratingLabel);
+  const finishBtn = document.createElement('button');
+  finishBtn.className = 'primary';
+  finishBtn.style.cssText = 'width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: bold; border-radius: 0.75rem; background: var(--accent-color); color: white; border: none; box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3);';
+  finishBtn.textContent = '読み終わった';
 
-  const buttonsGrid = document.createElement('div');
-  buttonsGrid.style.cssText = 'display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;';
+  finishBtn.onclick = () => window.rateReview(2); // Record as "Good" (standard)
 
-  const ratings = [
-    { q: 1, icon: '🗓️', label: 'また近日中に', bg: 'rgba(255,255,255,0.05)', border: 'var(--border-color)', subtitle: 'Keep Learning' },
-    { q: 2, icon: '✅', label: '完了 (次は先へ)', bg: 'rgba(59, 130, 246, 0.2)', border: 'var(--accent-color)', subtitle: 'Mastered' }
-  ];
-
-  ratings.forEach(r => {
-    const btn = document.createElement('button');
-    btn.className = 'review-quality';
-    btn.dataset.quality = r.q;
-    // Remove individual borders/bgs here and let CSS handle default, or keep minimal inline
-    btn.style.cssText = `background: ${r.bg}; border: 1px solid ${r.border}; padding: 0.75rem; transition: transform 0.1s; height: auto; min-height: 60px;`;
-
-    // Add click effect
-    btn.onclick = (e) => {
-      // Simple ripple or scale effect could be added here
-      window.rateReview(r.q);
-    };
-
-    const contentWrapper = document.createElement('div');
-    contentWrapper.style.cssText = 'display: flex; align-items: center; justify-content: center; gap: 0.5rem;';
-
-    const iconDiv = document.createElement('div');
-    iconDiv.style.fontSize = '1.2rem';
-    iconDiv.textContent = r.icon;
-
-    const textWrapper = document.createElement('div');
-    textWrapper.style.cssText = 'display: flex; flex-direction: column; align-items: flex-start;';
-
-    const labelDiv = document.createElement('div');
-    labelDiv.style.cssText = 'font-size: 0.9rem; font-weight: 600; color: var(--text-primary);';
-    labelDiv.textContent = r.label;
-
-    // Optional subtitle if space permits, simplified for footer
-    // const subtitleDiv = document.createElement('div');
-    // subtitleDiv.style.cssText = 'font-size: 0.7rem; color: var(--text-secondary);';
-    // subtitleDiv.textContent = r.subtitle;
-    // textWrapper.append(labelDiv, subtitleDiv);
-
-    contentWrapper.append(iconDiv, labelDiv);
-    btn.appendChild(contentWrapper);
-    buttonsGrid.appendChild(btn);
-  });
-
-  ratingInner.appendChild(buttonsGrid);
+  ratingInner.appendChild(finishBtn);
   ratingDiv.appendChild(ratingInner);
   container.appendChild(ratingDiv);
 }
