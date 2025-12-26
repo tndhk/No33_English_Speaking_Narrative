@@ -14,19 +14,17 @@
 
 <body>
     <div id="app">
-        <header style="position: relative;">
-            <div id="auth-ui-container"></div>
+        <header>
             <h1>My English Journal</h1>
             <p class="subtitle">Record your days, master your English.</p>
         </header>
-
-        <!-- Authentication Required Message -->
 
         <!-- Authentication Required Message -->
         <div id="auth-required" style="display: none;">
             <div class="card">
                 <h2>ログインが必要です</h2>
                 <p>学習履歴と設定を管理するには、ログインしてください。</p>
+                <div id="login-container" style="margin-top: 2rem;"></div>
             </div>
         </div>
 
@@ -77,10 +75,11 @@
                     <div class="label">振り返り</div>
                 </button>
                 <button class="bottom-nav-item" data-view="history" onclick="window.switchView('history')">
-                    <div class="icon">📅</div>
-                    <div class="label">カレンダー</div>
-                </button>
             </nav>
+
+            <footer class="app-footer">
+                <div id="logout-container"></div>
+            </footer>
 
             <div id="loading-overlay" style="display: none;">
                 <div class="spinner"></div>

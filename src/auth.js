@@ -166,85 +166,65 @@ export function renderAuthUI(container) {
   container.innerHTML = '';
 
   if (authState.loading) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'auth-container';
-
     const loading = document.createElement('div');
     loading.className = 'auth-loading';
     loading.textContent = '読み込み中...';
-
-    wrapper.appendChild(loading);
-    container.appendChild(wrapper);
+    container.appendChild(loading);
     return;
   }
 
   if (authState.user) {
-    // User is logged in - show compact info in header
-    const wrapper = document.createElement('div');
-    wrapper.className = 'auth-container auth-logged-in';
+    // User is logged in - Minimal footer info
+    if (container.id === 'logout-container') {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'auth-footer-content';
 
-    const userInfo = document.createElement('div');
-    userInfo.className = 'user-info';
+      const email = document.createElement('span');
+      email.className = 'footer-user-email';
+      email.textContent = authState.user.email;
 
-    const email = document.createElement('span');
-    email.className = 'user-email';
-    email.textContent = authState.user.email;
+      const logoutBtn = document.createElement('button');
+      logoutBtn.className = 'btn-link';
+      logoutBtn.textContent = 'Logout';
+      logoutBtn.onclick = () => signOut();
 
-    const logoutBtn = document.createElement('button');
-    logoutBtn.id = 'logout-btn';
-    logoutBtn.className = 'secondary';
-    logoutBtn.textContent = 'Logout';
-    logoutBtn.onclick = () => signOut();
-
-    userInfo.appendChild(email);
-    userInfo.appendChild(logoutBtn);
-    wrapper.appendChild(userInfo);
-    container.appendChild(wrapper);
+      wrapper.appendChild(email);
+      wrapper.appendChild(logoutBtn);
+      container.appendChild(wrapper);
+    }
   } else {
-    // User is not logged in
-    const wrapper = document.createElement('div');
-    wrapper.className = 'auth-container auth-logged-out';
+    // User is not logged in - Full login form
+    if (container.id === 'login-container') {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'auth-form-compact';
 
-    const authFormDiv = document.createElement('div');
-    authFormDiv.className = 'auth-form';
+      // Google Login Button
+      const googleBtn = document.createElement('button');
+      googleBtn.type = 'button';
+      googleBtn.className = 'btn btn-google';
+      googleBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z" fill="#34A853"/>
+          <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+        </svg>
+        Googleでログイン
+      `;
+      googleBtn.addEventListener('click', async () => {
+        googleBtn.disabled = true;
+        googleBtn.textContent = '処理中...';
+        const result = await signInWithGoogle();
+        if (!result.success) {
+          alert('ログインに失敗しました: ' + result.error);
+          googleBtn.disabled = false;
+          googleBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9.003 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z" fill="#34A853"/><path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/></svg>Googleでログイン`;
+        }
+      });
 
-    const title = document.createElement('h2');
-    title.className = 'auth-title';
-    title.textContent = 'ログイン';
-
-    const desc = document.createElement('p');
-    desc.className = 'auth-description';
-    desc.textContent = '学習履歴と設定を保存するには、アカウントが必要です。';
-
-    // Google Login Button
-    const googleBtn = document.createElement('button');
-    googleBtn.type = 'button';
-    googleBtn.className = 'btn btn-google';
-    googleBtn.innerHTML = `
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
-        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
-        <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z" fill="#34A853"/>
-        <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-        <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
-      </svg>
-      Googleでログイン
-    `;
-    googleBtn.addEventListener('click', async () => {
-      googleBtn.disabled = true;
-      googleBtn.textContent = '処理中...';
-      const result = await signInWithGoogle();
-      if (!result.success) {
-        alert('ログインに失敗しました: ' + result.error);
-        googleBtn.disabled = false;
-        googleBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9.003 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z" fill="#34A853"/><path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/></svg>Googleでログイン`;
-      }
-    });
-
-    authFormDiv.appendChild(title);
-    authFormDiv.appendChild(desc);
-    authFormDiv.appendChild(googleBtn);
-    wrapper.appendChild(authFormDiv);
-    container.appendChild(wrapper);
+      wrapper.appendChild(googleBtn);
+      container.appendChild(wrapper);
+    }
   }
 }
 
@@ -252,18 +232,18 @@ export function renderAuthUI(container) {
  * Set up authentication form handlers
  */
 function setupAuthFormHandlers() {
-  // This function is no longer needed for Google-only login
-  // Keeping it for backward compatibility but it does nothing
+  // This function is no longer needed
 }
 
 /**
  * Update auth UI (called when auth state changes)
  */
 function updateAuthUI() {
-  const authContainer = document.getElementById('auth-ui-container');
-  if (authContainer) {
-    renderAuthUI(authContainer);
-  }
+  const loginContainer = document.getElementById('login-container');
+  const logoutContainer = document.getElementById('logout-container');
+
+  if (loginContainer) renderAuthUI(loginContainer);
+  if (logoutContainer) renderAuthUI(logoutContainer);
 
   // Update app visibility based on auth state
   const appContent = document.getElementById('app-content');

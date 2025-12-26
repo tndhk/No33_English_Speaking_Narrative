@@ -659,146 +659,52 @@ input[type="range"] {
 /* Hide Bottom Nav on Review Screen if overlapping (Optional safety) */
 /* Ideally we just ensure z-index covers it or JS hides it, but sticky footer has z-index 1000 */
 
-/* Authentication Styles */
-.auth-container {
-    margin-bottom: 1.5rem;
+/* Footer & Auth Styling */
+.app-footer {
+    margin-top: 4rem;
+    padding: 2rem 0;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
 }
 
-.auth-logged-in {
+.auth-footer-content {
     display: flex;
-    justify-content: flex-end;
-}
-
-.user-info {
-    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 0.75rem 1.25rem;
-    border-radius: 0.75rem;
-    border: 1px solid var(--border-color);
-}
-
-.user-email {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-#logout-btn {
-    width: auto;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-}
-
-.auth-logged-out {
-    max-width: 450px;
-    margin: 0 auto;
-}
-
-.auth-form {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 1.5rem;
-    padding: 2rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-.auth-title {
-    font-size: 1.75rem;
-    margin-bottom: 0.75rem;
-    text-align: center;
-}
-
-.auth-description {
-    color: var(--text-secondary);
-    text-align: center;
-    margin-bottom: 2rem;
-    font-size: 0.95rem;
-    line-height: 1.5;
-}
-
-.form-tabs {
-    display: flex;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
 }
 
-.tab-btn {
-    flex: 1;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    background: transparent;
-    color: var(--text-secondary);
-    border-radius: 0.75rem;
-    font-size: 0.95rem;
+.footer-user-email {
+    opacity: 0.7;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--accent-color);
+    font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    text-decoration: underline;
+    padding: 4px 8px;
+    width: auto;
 }
 
-.tab-btn:hover {
+.btn-link:hover {
+    color: var(--accent-hover);
     background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
+    border-radius: 4px;
 }
 
-.tab-btn.active {
-    background: var(--accent-color);
-    color: #fff;
-    border-color: var(--accent-color);
-}
-
-.auth-form-fields {
+.auth-form-compact {
     display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
+    justify-content: center;
+    padding: 1rem 0;
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.form-group label {
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-input[type="email"],
-input[type="password"] {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    background: #0f172a;
-    color: var(--text-primary);
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    transition: border-color 0.2s ease;
-}
-
-input[type="email"]:focus,
-input[type="password"]:focus {
-    outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
-}
-
-.auth-error {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #fca5a5;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 0.9rem;
-    text-align: center;
-}
-
-.auth-loading {
-    text-align: center;
-    color: var(--text-secondary);
-    padding: 2rem;
+padding: 2rem;
 }
 
 #auth-required {

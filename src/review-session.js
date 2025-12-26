@@ -22,21 +22,25 @@ const reviewSession = {
  */
 async function initReviewSession(options = {}) {
   try {
-    const { order = 'oldest_first', limit = null } = options;
+    const { order = 'oldest_first', limit = null, all = false } = options;
 
-    // Get due narratives
-    const dueNarratives = (await window.storage?.getNarrativesDueToday()) || [];
+    let targetNarratives = [];
+    if (all) {
+      targetNarratives = (await window.storage?.getAllNarratives()) || [];
+    } else {
+      targetNarratives = (await window.storage?.getNarrativesDueToday()) || [];
+    }
 
-    if (dueNarratives.length === 0) {
+    if (targetNarratives.length === 0) {
       return false; // No narratives to review
     }
 
     // Apply order
-    let ordered = dueNarratives;
+    let ordered = targetNarratives;
     if (order === 'oldest_first') {
-      ordered = window.srs?.getOptimalReviewOrder(dueNarratives) || dueNarratives;
+      ordered = window.srs?.getOptimalReviewOrder(targetNarratives) || targetNarratives;
     } else if (order === 'random') {
-      ordered = window.srs?.getRandomReviewOrder(dueNarratives) || dueNarratives;
+      ordered = window.srs?.getRandomReviewOrder(targetNarratives) || targetNarratives;
     }
 
     // Apply limit if specified

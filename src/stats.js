@@ -123,7 +123,7 @@ async function renderReviewDashboard() {
       html += `
           <div style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">
             <p>🎉 今日の振り返りは完了しています</p>
-            <button class="secondary" onclick="window.startReview()" style="margin-top:0.5rem;">自由に読み返す</button>
+            <button class="secondary" onclick="window.startReview({ all: true })" style="margin-top:0.5rem;">自由に読み返す</button>
           </div>
         `;
     }
@@ -389,26 +389,6 @@ async function renderNarrativeDetailView(narrativeId) {
       </div>
     </div>
 
-    <!-- SRS Information -->
-    <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
-      <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-color);">📊 振り返り情報</h3>
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-        <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">ステータス</div>
-          <div style="font-size: 1.1rem; font-weight: bold;">${narrative.srs?.status || 'new'}</div>
-        </div>
-        <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">振り返り回数</div>
-          <div style="font-size: 1.1rem; font-weight: bold;">${narrative.srs?.review_count || 0}</div>
-        </div>
-        <div style="grid-column: 1 / -1;">
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.25rem;">次回おすすめ</div>
-          <div style="font-size: 1.1rem; font-weight: bold;">
-            ${narrative.srs?.next_review_date ? new Date(narrative.srs.next_review_date).toLocaleDateString('ja-JP') : '未設定'}
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Action Buttons -->
     <div style="display: flex; gap: 1rem; margin-top: 2rem;">
@@ -453,10 +433,10 @@ window.goToGenerate = function () {
   window.switchView('generate');
 };
 
-window.startReview = async function () {
+window.startReview = async function (options = {}) {
   window.showLoading('Preparing review...');
   try {
-    const success = await window.initReviewSession({ order: 'oldest_first' });
+    const success = await window.initReviewSession({ order: 'oldest_first', ...options });
     if (!success) {
       alert('振り返る日記がありません');
       return;
