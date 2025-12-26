@@ -254,12 +254,16 @@ async function renderHistoryPage() {
 
   let html = `
     <!-- Calendar Controls -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; background: #0f172a; padding: 1rem; border-radius: 0.5rem;">
-        <button class="secondary" onclick="window.changeMonth(-1)">◀</button>
-        <div style="font-size: 1.2rem; font-weight: bold;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: rgba(15, 23, 42, 0.4); padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid var(--border-color);">
+        <button class="calendar-nav-btn" onclick="window.changeMonth(-1)" aria-label="Previous Month">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div style="font-size: 1.1rem; font-weight: 600; letter-spacing: 0.02em; font-family: 'Outfit', sans-serif;">
             <span id="calendar-month-label"></span>
         </div>
-        <button class="secondary" onclick="window.changeMonth(1)">▶</button>
+        <button class="calendar-nav-btn" onclick="window.changeMonth(1)" aria-label="Next Month">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
     </div>
 
     <!-- Calendar Grid -->

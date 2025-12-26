@@ -158,6 +158,34 @@ button.secondary:hover {
     border-color: rgba(255, 255, 255, 0.2);
 }
 
+.calendar-nav-btn {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 0 !important;
+}
+
+.calendar-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    transform: scale(1.05);
+    border-color: var(--accent-color);
+}
+
+.calendar-nav-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
 #loading-overlay {
     position: fixed;
     top: 0;
