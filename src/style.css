@@ -330,6 +330,13 @@ button.secondary:hover {
 
     .card {
         padding: 1.5rem;
+        margin-bottom: 2rem;
+        /* Ensure space below cards */
+    }
+
+    #step-actions {
+        padding-bottom: 2rem;
+        /* Extra space below buttons on wizard */
     }
 
     /* Full width cards on very small screens */
