@@ -420,7 +420,6 @@ function renderResult() {
         });
     }
 }
-}
 
 window.speak = (text, index, fullTextOverride) => {
     window.speechSynthesis.cancel();
