@@ -65,20 +65,20 @@ function transformToDB(appObj) {
 }
 
 /**
- * Get all narratives from Supabase
+ * Get all en_journal_narratives from Supabase
  * @returns {Promise<Array>} Array of narrative objects
  */
 async function getAllNarratives() {
   try {
     const { data, error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data.map(transformFromDB);
   } catch (error) {
-    console.error('Error reading narratives from Supabase:', error);
+    console.error('Error reading en_journal_narratives from Supabase:', error);
     return [];
   }
 }
@@ -93,7 +93,7 @@ async function saveNarrative(narrative, metadata = {}) {
   try {
     const userId = getUserId();
     if (!userId) {
-      throw new Error('User must be authenticated to save narratives');
+      throw new Error('User must be authenticated to save en_journal_narratives');
     }
 
     const newNarrative = {
@@ -113,7 +113,7 @@ async function saveNarrative(narrative, metadata = {}) {
     const dbRow = transformToDB(newNarrative);
 
     const { data, error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .insert(dbRow)
       .select()
       .single();
@@ -137,7 +137,7 @@ async function saveNarrative(narrative, metadata = {}) {
 async function getNarrativeById(id) {
   try {
     const { data, error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .select('*')
       .eq('id', id)
       .single();
@@ -168,7 +168,7 @@ async function updateNarrativeSRS(id, srsData) {
     const newSrs = { ...current.srs, ...srsData };
 
     const { data, error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .update({ srs_data: newSrs })
       .eq('id', id)
       .select()
@@ -190,7 +190,7 @@ async function updateNarrativeSRS(id, srsData) {
 async function deleteNarrative(id) {
   try {
     const { error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .delete()
       .eq('id', id);
 
@@ -203,7 +203,7 @@ async function deleteNarrative(id) {
 }
 
 /**
- * Get narratives due for review today
+ * Get en_journal_narratives due for review today
  * @returns {Promise<Array>} Array of narrative objects
  */
 async function getNarrativesDueToday() {
@@ -212,9 +212,9 @@ async function getNarrativesDueToday() {
   // Note: JSON filtering in Supabase/Postgres requires specific syntax
   // Using simplified client-side filtering for MVP to handle complex JSON logic easily
   // In production with many rows, this should be moved to a DB view or RPC
-  const narratives = await getAllNarratives();
+  const en_journal_narratives = await getAllNarratives();
 
-  return narratives.filter(n =>
+  return en_journal_narratives.filter(n =>
     n.srs &&
     n.srs.status !== 'mastered' &&
     n.srs.status !== 'suspended' &&
@@ -223,7 +223,7 @@ async function getNarrativesDueToday() {
 }
 
 /**
- * Get narratives due in the next N days
+ * Get en_journal_narratives due in the next N days
  * @param {number} days - Number of days to look ahead
  * @returns {Promise<Array>} Array of narrative objects
  */
@@ -235,9 +235,9 @@ async function getNarrativesUpcoming(days = 7) {
   const todayStr = formatDate(today);
   const futureDateStr = formatDate(futureDate);
 
-  const narratives = await getAllNarratives();
+  const en_journal_narratives = await getAllNarratives();
 
-  return narratives.filter(n =>
+  return en_journal_narratives.filter(n =>
     n.srs &&
     n.srs.status !== 'mastered' &&
     n.srs.status !== 'suspended' &&
@@ -247,9 +247,9 @@ async function getNarrativesUpcoming(days = 7) {
 }
 
 /**
- * Search narratives by keyword
+ * Search en_journal_narratives by keyword
  * @param {string} query - Search query
- * @returns {Promise<Array>} Matching narratives
+ * @returns {Promise<Array>} Matching en_journal_narratives
  */
 async function searchNarratives(query) {
   if (!query) return getAllNarratives();
@@ -257,9 +257,9 @@ async function searchNarratives(query) {
   const q = query.toLowerCase();
 
   // Using client-side filter for consistency with MVP JSON structure
-  const narratives = await getAllNarratives();
+  const en_journal_narratives = await getAllNarratives();
 
-  return narratives.filter(n =>
+  return en_journal_narratives.filter(n =>
     (n.narrative_en && n.narrative_en.toLowerCase().includes(q)) ||
     (n.recall_test && n.recall_test.prompt_ja && n.recall_test.prompt_ja.includes(query)) ||
     (n.category && n.category.toLowerCase().includes(q))
@@ -267,16 +267,16 @@ async function searchNarratives(query) {
 }
 
 /**
- * Filter narratives by criteria
+ * Filter en_journal_narratives by criteria
  * @param {Object} filters - Filter object {category, status, searchQuery}
- * @returns {Promise<Array>} Filtered narratives
+ * @returns {Promise<Array>} Filtered en_journal_narratives
  */
 async function filterNarratives(filters = {}) {
-  let narratives = await getAllNarratives(); // Start with all, then filter in memory
+  let en_journal_narratives = await getAllNarratives(); // Start with all, then filter in memory
 
   if (filters.searchQuery) {
     const q = filters.searchQuery.toLowerCase();
-    narratives = narratives.filter(n =>
+    en_journal_narratives = en_journal_narratives.filter(n =>
       (n.narrative_en && n.narrative_en.toLowerCase().includes(q)) ||
       (n.recall_test && n.recall_test.prompt_ja && n.recall_test.prompt_ja.includes(filters.searchQuery)) ||
       (n.category && n.category.toLowerCase().includes(q))
@@ -284,14 +284,14 @@ async function filterNarratives(filters = {}) {
   }
 
   if (filters.category && filters.category !== 'all') {
-    narratives = narratives.filter(n => n.category === filters.category);
+    en_journal_narratives = en_journal_narratives.filter(n => n.category === filters.category);
   }
 
   if (filters.status && filters.status !== 'all') {
-    narratives = narratives.filter(n => n.srs && n.srs.status === filters.status);
+    en_journal_narratives = en_journal_narratives.filter(n => n.srs && n.srs.status === filters.status);
   }
 
-  return narratives;
+  return en_journal_narratives;
 }
 
 /**
@@ -476,28 +476,28 @@ async function resetSRSStats() {
 }
 
 /**
- * Export all narratives as JSON
+ * Export all en_journal_narratives as JSON
  */
 async function exportNarrativesJSON() {
   try {
-    const narratives = await getAllNarratives();
-    return JSON.stringify(narratives, null, 2);
+    const en_journal_narratives = await getAllNarratives();
+    return JSON.stringify(en_journal_narratives, null, 2);
   } catch (error) {
-    console.error('Error exporting narratives:', error);
+    console.error('Error exporting en_journal_narratives:', error);
     return null;
   }
 }
 
 /**
- * Export narratives as CSV
+ * Export en_journal_narratives as CSV
  */
 async function exportNarrativesCSV() {
   try {
-    const narratives = await getAllNarratives();
-    if (narratives.length === 0) return '';
+    const en_journal_narratives = await getAllNarratives();
+    if (en_journal_narratives.length === 0) return '';
 
     const headers = ['Date', 'Category', 'Narrative', 'Recall Test (Japanese)', 'Next Review', 'Status', 'Review Count'];
-    const rows = narratives.map(n => [
+    const rows = en_journal_narratives.map(n => [
       n.created_at ? n.created_at.split('T')[0] : '',
       n.category || '',
       `"${(n.narrative_en || '').replace(/"/g, '""')}"`,
@@ -520,7 +520,7 @@ async function exportNarrativesCSV() {
 }
 
 /**
- * Import narratives from JSON
+ * Import en_journal_narratives from JSON
  * Note: Logic changed to bulk insert
  */
 async function importNarrativesJSON(jsonString) {
@@ -548,7 +548,7 @@ async function importNarrativesJSON(jsonString) {
     });
 
     const { data, error } = await supabase
-      .from('narratives')
+      .from('en_journal_narratives')
       .insert(dbRows)
       .select();
 
@@ -556,7 +556,7 @@ async function importNarrativesJSON(jsonString) {
 
     return data.map(transformFromDB);
   } catch (error) {
-    console.error('Error importing narratives:', error);
+    console.error('Error importing en_journal_narratives:', error);
     throw new Error('Invalid JSON format or DB error');
   }
 }
@@ -566,7 +566,7 @@ async function importNarrativesJSON(jsonString) {
  */
 async function clearAllData() {
   try {
-    await supabase.from('narratives').delete().neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+    await supabase.from('en_journal_narratives').delete().neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
     await resetSRSStats();
   } catch (error) {
     console.error('Error clearing data:', error);
@@ -577,18 +577,18 @@ async function clearAllData() {
  * Get storage statistics
  */
 async function getStorageStats() {
-  const narratives = await getAllNarratives();
+  const en_journal_narratives = await getAllNarratives();
 
   // Size estimate is rough
-  const totalSize = JSON.stringify(narratives).length;
+  const totalSize = JSON.stringify(en_journal_narratives).length;
 
   return {
-    total_narratives: narratives.length,
+    total_en_journal_narratives: en_journal_narratives.length,
     total_storage_bytes: totalSize,
     total_storage_kb: (totalSize / 1024).toFixed(2),
-    new_count: narratives.filter(n => n.srs?.status === 'new').length,
-    learning_count: narratives.filter(n => n.srs?.status === 'learning').length,
-    mastered_count: narratives.filter(n => n.srs?.status === 'mastered').length
+    new_count: en_journal_narratives.filter(n => n.srs?.status === 'new').length,
+    learning_count: en_journal_narratives.filter(n => n.srs?.status === 'learning').length,
+    mastered_count: en_journal_narratives.filter(n => n.srs?.status === 'mastered').length
   };
 }
 
