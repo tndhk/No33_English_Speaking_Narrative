@@ -364,9 +364,9 @@ function getQualityBreakdown(narrative) {
  * @returns {string} Estimated mastery date (YYYY-MM-DD)
  */
 function estimateMasteryDate(narrative) {
-  if (!narrative || !narrative.srs || !narrative.srs.quality_history) return null;
+  if (!narrative || !narrative.srs) return null;
 
-  const { interval_index, quality_history } = narrative.srs;
+  const { interval_index, quality_history = [] } = narrative.srs;
   if (interval_index >= SRS_INTERVALS.length - 1) {
     return formatDate(new Date()); // Already mastered
   }
