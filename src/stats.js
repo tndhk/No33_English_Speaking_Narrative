@@ -132,16 +132,6 @@ async function renderReviewDashboard() {
     </div>
   `;
 
-  // NOTE: Removed "Upcoming" section completely to simplify the UI
-
-  // Navigation buttons
-  html += `
-    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-      <button class="secondary" onclick="window.goToHistory()" style="flex: 1;">📅 カレンダー</button>
-      <button class="secondary" onclick="window.goToStats()" style="flex: 1;">📊 データ</button>
-      <button class="secondary" onclick="window.goToGenerate()" style="flex: 1;">✍️ 書く</button>
-    </div>
-  `;
 
   container.innerHTML = html;
 }
@@ -197,82 +187,47 @@ async function renderStatsPage() {
           <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">記憶定着率</div>
           <div style="font-size: 2rem; font-weight: bold;">${srsStats.accuracy_rate || '0'}%</div>
         </div>
-      </div>
     </div>
 
-    <h3>カテゴリ別の記録</h3>
-    <div style="background: #0f172a; padding: 1rem; border-radius: 1rem; margin-bottom: 2rem;">
-  `;
-
-  Object.entries(byCategory).forEach(([cat, counts]) => {
-    const total = counts.total;
-    const masteredPct = (counts.mastered / total * 100).toFixed(0);
-    const displayCat = formatCategory(cat);
-
-    html += `
-      <div style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-          <strong>${displayCat}</strong>
-          <span style="font-size: 0.9rem; color: var(--text-secondary);">${counts.total} 件</span>
-        </div>
-        <div style="display: flex; height: 24px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.05); margin-bottom: 0.5rem;">
-          <div style="flex: ${counts.new}; background: #60a5fa;" title="初回: ${counts.new}"></div>
-          <div style="flex: ${counts.learning}; background: #fbbf24;" title="記憶中: ${counts.learning}"></div>
-          <div style="flex: ${counts.mastered}; background: #4ade80;" title="定着済: ${counts.mastered}"></div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary);">
-          <span>初回: ${counts.new}</span>
-          <span>記憶中: ${counts.learning}</span>
-          <span style="color: #4ade80;">定着済: ${counts.mastered} (${masteredPct}%)</span>
-        </div>
-      </div>
-    `;
-  });
-
-  html += '</div>';
 
   // Mastery timeline
   if (narratives.length > 0) {
     html += `
-      <h3>次の振り返り予定</h3>
+    < h3 > 次の振り返り予定</h3>
       <div style="background: #0f172a; padding: 1rem; border-radius: 1rem; margin-bottom: 2rem;">
-    `;
+        `;
 
-    const estimates = narratives
+        const estimates = narratives
       .filter(n => n.srs?.status !== 'mastered')
       .map(n => ({
-        date: window.srs?.estimateMasteryDate(n),
+          date: window.srs?.estimateMasteryDate(n),
         category: n.category
       }))
       .filter(e => e.date)
       .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .slice(0, 10);
+        .slice(0, 10);
 
     if (estimates.length > 0) {
-      estimates.forEach(e => {
-        const date = new Date(e.date);
-        const daysAway = Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24));
-        const displayCat = formatCategory(e.category);
+          estimates.forEach(e => {
+            const date = new Date(e.date);
+            const daysAway = Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24));
+            const displayCat = formatCategory(e.category);
 
-        html += `
+            html += `
           <div style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
             <span>${displayCat}</span>
             <span style="color: ${daysAway <= 7 ? '#fbbf24' : '#60a5fa'};">${date.toLocaleDateString('ja-JP')} (${daysAway}日後)</span>
           </div>
         `;
-      });
+          });
     } else {
-      html += '<p style="color: var(--text-secondary); margin: 0;">次の振り返り予定はありません</p>';
+          html += '<p style="color: var(--text-secondary); margin: 0;">次の振り返り予定はありません</p>';
     }
 
-    html += '</div>';
-  }
+        html += '</div>';
+}
 
-  html += `
-    <button class="secondary" onclick="window.goToReviewDashboard()" style="width: 100%;">← 戻る</button>
-  `;
-
-  container.innerHTML = html;
+container.innerHTML = html;
 }
 
 /**
@@ -321,12 +276,8 @@ async function renderHistoryPage() {
         <h3 id="selected-date-label">Select a date</h3>
         <div id="selected-date-entries"></div>
     </div>
-    
-    <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-        <button class="secondary" onclick="window.goToReviewDashboard()" style="flex: 1;">← 戻る</button>
-        <button class="secondary" onclick="window.goToGenerate()" style="flex: 1;">✍️ 書く</button>
-    </div>
   `;
+
 
   container.innerHTML = html;
   window.renderCalendar();
