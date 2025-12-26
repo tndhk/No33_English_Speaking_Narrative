@@ -640,10 +640,10 @@ window.switchView = async (view) => {
                 result.style.display = 'block';
                 if (window.renderHistoryPage) await window.renderHistoryPage();
                 break;
-            case 'stats':
+            case 'profile':
                 wizard.style.display = 'none';
                 result.style.display = 'block';
-                if (window.renderStatsPage) await window.renderStatsPage();
+                if (window.renderProfilePage) await window.renderProfilePage();
                 break;
         }
     } finally {

@@ -142,7 +142,7 @@ async function renderReviewDashboard() {
 /**
  * Render detailed statistics screen
  */
-async function renderStatsPage() {
+async function renderProfilePage() {
   const container = document.getElementById('result-container');
   if (!container) return;
 
@@ -154,6 +154,10 @@ async function renderStatsPage() {
   const narratives = (await window.storage?.getAllNarratives()) || [];
   const stats = (await window.storage?.getSRSStats()) || {};
   const srsStats = window.srs?.getReviewStatistics(narratives) || {};
+
+  // Get current user info safely
+  const user = window.auth?.currentUser || {};
+  const email = user.email || 'Guest User';
 
   // Calculate stats by category
   const byCategory = {};
@@ -169,6 +173,23 @@ async function renderStatsPage() {
   });
 
   let html = `
+    <!-- User Profile Card -->
+    <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--accent-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                👤
+            </div>
+            <div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);">Logged in as</div>
+                <div style="font-weight: bold; font-size: 1.1rem;">${email}</div>
+            </div>
+        </div>
+        <button class="secondary" onclick="window.auth.signOut()" style="margin: 0; padding: 0.5rem 1rem; font-size: 0.9rem;">
+            Logout
+        </button>
+    </div>
+
+    <!-- Stats Cards -->
     <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
         <div>
