@@ -185,6 +185,10 @@ function endReviewSession() {
     completed: 0,
     ratings: []
   };
+
+  // Reset container style
+  const container = document.getElementById('result-container');
+  if (container) container.style.paddingBottom = '';
 }
 
 /**
@@ -240,6 +244,9 @@ function renderReviewSession() {
   endBtn.onclick = () => window.endReviewClick();
 
   titleRow.append(title, endBtn);
+
+  // Add padding to container to prevent content from being hidden behind sticky footer
+  container.style.paddingBottom = '110px';
 
   // Progress Bar
   const progressContainer = document.createElement('div');
@@ -303,64 +310,41 @@ function renderReviewSession() {
   const enContent = document.createElement('div');
   enContent.style.cssText = 'margin-bottom: 2rem;';
 
-  const enLabel = document.createElement('div');
-  enLabel.style.cssText = 'font-size: 0.85rem; color: var(--text-tertiary); margin-bottom: 0.75rem; display:flex; justify-content:space-between; align-items:center;';
-  enLabel.innerHTML = '<span>JOURNAL</span>';
-
-  // Play all button
-  const playAllBtn = document.createElement('button');
-  playAllBtn.className = 'secondary';
-  playAllBtn.style.cssText = 'padding: 0.2rem 0.6rem; font-size: 0.75rem;';
-  playAllBtn.innerHTML = '🔊 全文再生';
-  playAllBtn.onclick = (e) => {
-    e.stopPropagation();
-    window.speak(null, null, narrative.narrative_en);
-  };
-  enLabel.appendChild(playAllBtn);
-
-  enContent.appendChild(enLabel);
-
   const narrativeText = document.createElement('div');
+  narrativeText.className = 'narrative-text-container';
   narrativeText.style.cssText = 'font-size: 1.15rem; line-height: 1.8; font-family: "Outfit", sans-serif;';
 
   const sentences = narrative.narrative_en.split(/(?<=[.!?])\s+/);
   sentences.forEach((s, index) => {
-    const item = document.createElement('div');
-    item.className = 'sentence-item';
-    item.style.marginBottom = '0.75rem';
-
-    const playBtn = document.createElement('button');
-    playBtn.className = 'play-sentence-btn';
-    playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
-
     const span = document.createElement('span');
     span.className = 'sentence-text';
     span.dataset.index = index;
-    span.textContent = s;
+    span.textContent = s + ' '; // Add space for natural text flow
 
-    const playHandler = (e) => {
-      if (e) e.stopPropagation();
+    // Tap to play
+    span.onclick = (e) => {
+      e.stopPropagation();
       window.speak(s, index, narrative.narrative_en);
     };
 
-    playBtn.onclick = playHandler;
-    span.onclick = playHandler;
-
-    item.append(playBtn, span);
-    narrativeText.appendChild(item);
+    narrativeText.appendChild(span);
   });
   enContent.appendChild(narrativeText);
   card.appendChild(enContent);
 
   // 3. Key Phrases (Bottom)
   if (narrative.key_phrases && narrative.key_phrases.length > 0) {
-    const kpBox = document.createElement('div');
-    kpBox.style.cssText = 'background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 0.75rem;';
+    const kpDetails = document.createElement('details');
+    kpDetails.className = 'key-phrases-details';
+    kpDetails.style.cssText = 'background: rgba(255,255,255,0.03); border-radius: 0.75rem; overflow: hidden;';
 
-    const kpLabel = document.createElement('div');
-    kpLabel.style.cssText = 'font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;';
-    kpLabel.textContent = 'Key Phrases';
-    kpBox.appendChild(kpLabel);
+    const kpSummary = document.createElement('summary');
+    kpSummary.style.cssText = 'padding: 1rem; cursor: pointer; font-size: 0.8rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; outline: none; list-style: none;';
+    kpSummary.textContent = '▶ Key Phrases'; // Unicode arrow for custom styling if needed
+    kpDetails.appendChild(kpSummary);
+
+    const kpContent = document.createElement('div');
+    kpContent.style.cssText = 'padding: 0 1rem 1rem 1rem;';
 
     narrative.key_phrases.slice(0, 3).forEach(p => {
       const row = document.createElement('div');
@@ -376,58 +360,74 @@ function renderReviewSession() {
       ja.textContent = p.meaning_ja;
 
       row.append(en, ja);
-      kpBox.appendChild(row);
+      kpContent.appendChild(row);
     });
-    card.appendChild(kpBox);
+    kpDetails.appendChild(kpContent);
+    card.appendChild(kpDetails);
   }
 
   container.appendChild(card);
 
-  // Rating Buttons
+  // Rating Buttons (Sticky Footer)
   const ratingDiv = document.createElement('div');
-  ratingDiv.style.marginBottom = '2rem';
+  ratingDiv.className = 'review-footer';
+
+  const ratingInner = document.createElement('div');
+  ratingInner.style.cssText = 'max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem;';
 
   const ratingLabel = document.createElement('p');
-  ratingLabel.style.cssText = 'text-align: center; margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-secondary);';
-  ratingLabel.textContent = 'この日記を読み終わりましたか？';
-  ratingDiv.appendChild(ratingLabel);
+  ratingLabel.style.cssText = 'text-align: center; font-size: 0.8rem; color: var(--text-secondary); margin: 0;';
+  ratingLabel.textContent = '読み終わりましたか？';
+  ratingInner.appendChild(ratingLabel);
 
   const buttonsGrid = document.createElement('div');
   buttonsGrid.style.cssText = 'display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;';
 
   const ratings = [
-    { q: 1, icon: '🗓️', label: 'また近日中に', bg: 'rgba(255,255,255,0.05)', border: 'var(--border-color)', subtitle: 'Shorter Interval' },
-    { q: 2, icon: '✅', label: '完了 (次は先へ)', bg: 'rgba(59, 130, 246, 0.2)', border: 'var(--accent-color)', subtitle: 'Longer Interval' }
+    { q: 1, icon: '🗓️', label: 'また近日中に', bg: 'rgba(255,255,255,0.05)', border: 'var(--border-color)', subtitle: 'Keep Learning' },
+    { q: 2, icon: '✅', label: '完了 (次は先へ)', bg: 'rgba(59, 130, 246, 0.2)', border: 'var(--accent-color)', subtitle: 'Mastered' }
   ];
 
   ratings.forEach(r => {
     const btn = document.createElement('button');
     btn.className = 'review-quality';
     btn.dataset.quality = r.q;
-    btn.style.cssText = `background: ${r.bg}; border: 1px solid ${r.border}; padding: 1rem; transition: transform 0.1s;`;
-    btn.onclick = () => window.rateReview(r.q);
+    // Remove individual borders/bgs here and let CSS handle default, or keep minimal inline
+    btn.style.cssText = `background: ${r.bg}; border: 1px solid ${r.border}; padding: 0.75rem; transition: transform 0.1s; height: auto; min-height: 60px;`;
+
+    // Add click effect
+    btn.onclick = (e) => {
+      // Simple ripple or scale effect could be added here
+      window.rateReview(r.q);
+    };
 
     const contentWrapper = document.createElement('div');
-    contentWrapper.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 0.25rem;';
+    contentWrapper.style.cssText = 'display: flex; align-items: center; justify-content: center; gap: 0.5rem;';
 
     const iconDiv = document.createElement('div');
-    iconDiv.style.fontSize = '1.5rem';
+    iconDiv.style.fontSize = '1.2rem';
     iconDiv.textContent = r.icon;
 
+    const textWrapper = document.createElement('div');
+    textWrapper.style.cssText = 'display: flex; flex-direction: column; align-items: flex-start;';
+
     const labelDiv = document.createElement('div');
-    labelDiv.style.cssText = 'font-size: 0.95rem; font-weight: 600; color: var(--text-primary);';
+    labelDiv.style.cssText = 'font-size: 0.9rem; font-weight: 600; color: var(--text-primary);';
     labelDiv.textContent = r.label;
 
-    const subtitleDiv = document.createElement('div');
-    subtitleDiv.style.cssText = 'font-size: 0.75rem; color: var(--text-secondary);';
-    subtitleDiv.textContent = r.subtitle;
+    // Optional subtitle if space permits, simplified for footer
+    // const subtitleDiv = document.createElement('div');
+    // subtitleDiv.style.cssText = 'font-size: 0.7rem; color: var(--text-secondary);';
+    // subtitleDiv.textContent = r.subtitle;
+    // textWrapper.append(labelDiv, subtitleDiv);
 
-    contentWrapper.append(iconDiv, labelDiv, subtitleDiv);
+    contentWrapper.append(iconDiv, labelDiv);
     btn.appendChild(contentWrapper);
     buttonsGrid.appendChild(btn);
   });
 
-  ratingDiv.appendChild(buttonsGrid);
+  ratingInner.appendChild(buttonsGrid);
+  ratingDiv.appendChild(ratingInner);
   container.appendChild(ratingDiv);
 }
 
@@ -440,6 +440,7 @@ async function renderSessionComplete() {
 
   // Clear container
   container.innerHTML = '';
+  container.style.paddingBottom = '';
 
   // Trigger animation
   container.classList.remove('view-enter');
