@@ -3,20 +3,11 @@
  * Tracks learning progress and provides visualization data
  */
 
-/**
- * Render review dashboard (main review entry point)
- */
-/**
- * Render review dashboard (main review entry point)
- */
-// Helper to format category for display (Duplicate from main.js for now, better to move to utility)
+import { CATEGORY_LABELS } from './constants.js';
+
+// Helper to format category for display
 function formatCategory(cat) {
-  const map = {
-    'today': '📝 日々の記録',
-    'thoughts': '💭 思考メモ',
-    'omakase': '✨ 自由記述'
-  };
-  return map[cat] || cat;
+  return CATEGORY_LABELS[cat] || cat;
 }
 
 /**
@@ -412,13 +403,6 @@ async function renderNarrativeDetailView(narrativeId) {
   container.innerHTML = html;
 }
 
-/**
- * Render filtered history list (Legacy - kept for compatibility if needed, but unused in calendar view)
- */
-async function renderFilteredHistory(narratives) {
-  // No-op for now as we switched to calendar
-}
-
 // Global functions for UI navigation
 window.renderReviewDashboard = renderReviewDashboard;
 window.renderHistoryPage = renderHistoryPage;
@@ -463,91 +447,6 @@ window.openExportUI = async function () {
   await window.renderExportUI();
 };
 
-// Filter state to maintain current filters
-window.historyFilters = {
-  searchQuery: '',
-  status: 'all',
-  category: 'all'
-};
-
-/**
- * Apply all filters and re-render history list
- */
-async function applyHistoryFilters() {
-  const filters = {};
-
-  if (window.historyFilters.searchQuery) {
-    filters.searchQuery = window.historyFilters.searchQuery;
-  }
-
-  if (window.historyFilters.status && window.historyFilters.status !== 'all') {
-    filters.status = window.historyFilters.status;
-  }
-
-  if (window.historyFilters.category && window.historyFilters.category !== 'all') {
-    filters.category = window.historyFilters.category;
-  }
-
-  const narratives = await window.storage?.filterNarratives(filters) || [];
-  await renderFilteredHistory(narratives);
-
-  // Update button states
-  updateFilterButtonStates();
-}
-
-/**
- * Update visual state of filter buttons
- */
-function updateFilterButtonStates() {
-  // Update status buttons
-  document.querySelectorAll('[data-filter-type="status"]').forEach(btn => {
-    const status = btn.getAttribute('data-filter-value');
-    if (status === window.historyFilters.status) {
-      btn.style.background = 'var(--accent-color)';
-      btn.style.color = 'white';
-    } else {
-      btn.style.background = '';
-      btn.style.color = '';
-    }
-  });
-
-  // Update category buttons
-  document.querySelectorAll('[data-filter-type="category"]').forEach(btn => {
-    const category = btn.getAttribute('data-filter-value');
-    if (category === window.historyFilters.category) {
-      btn.style.background = 'var(--accent-color)';
-      btn.style.color = 'white';
-    } else {
-      btn.style.background = '';
-      btn.style.color = '';
-    }
-  });
-}
-
-/**
- * Filter history by search query
- */
-window.filterHistory = async function (query) {
-  window.historyFilters.searchQuery = query;
-  await applyHistoryFilters();
-};
-
-/**
- * Filter history by status
- */
-window.filterByStatus = async function (status) {
-  window.historyFilters.status = status;
-  await applyHistoryFilters();
-};
-
-/**
- * Filter history by category
- */
-window.filterByCategory = async function (category) {
-  window.historyFilters.category = category;
-  await applyHistoryFilters();
-};
-
 window.viewNarrativeDetails = async function (id) {
   // Navigate to detail view
   window.scrollTo(0, 0);
@@ -570,3 +469,4 @@ window.deleteNarrative = async function (id) {
     window.hideLoading();
   }
 };
+

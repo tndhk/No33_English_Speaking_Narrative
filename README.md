@@ -7,14 +7,14 @@
 
 ### コア機能
 - **Journal Generation**: ユーザーの入力（日本語）から、レベルに合わせた英語の日記を生成
-- **Personalized Learning**: 文脈に即した重要表現（Key Phrases）と、理解度を確認するリコールテスト（Recall Test）を提供
-- **Text-to-Speech (TTS)**: 生成された日記を音声で読み上げ。速度調整や文単位のリピート再生が可能
+- **Personalized Learning**: 文脈に即した重要表現（Key Phrases）、言い換え表現（Alternative Expressions）、理解度を確認するリコールテスト（Recall Test）を提供
+- **Text-to-Speech (TTS)**: 生成された日記を音声で読み上げ。文単位のリピート再生が可能
 
 ### 学習管理機能
 - **SRS (Spaced Repetition System)**: 効率的な反復学習のための復習スケジュール管理
-- **Review Dashboard**: 今日の復習項目の一覧表示と進捗管理
-- **Statistics**: 学習の統計情報（総復習数、連続日数、習熟度分布など）
-- **History**: 過去に生成した日記の履歴管理
+- **Review Dashboard**: 今日の復習項目と「Years Ago Today」（過去の今日の日記）を表示
+- **Calendar View**: 過去の日記をカレンダー形式で閲覧
+- **History**: 日付ごとの日記履歴管理
 
 ### データ管理
 - **Database**: Supabase を使用したデータ永続化
