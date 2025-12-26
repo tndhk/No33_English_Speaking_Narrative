@@ -131,27 +131,6 @@ async function renderReviewDashboard() {
 
   html += '</div>'; // End Hero Section
 
-  // Simple Stats (Bottom, subtle)
-  html += `
-    <div style="border-top: 1px solid var(--border-color); padding-top: 2rem; margin-bottom: 1rem;">
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
-            <div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);">${stats.current_streak || 0}</div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary);">続けた日数</div>
-            </div>
-            <div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);">${narratives.length}</div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary);">思い出の数</div>
-            </div>
-            <div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);">${stats.total_reviews || 0}</div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary);">読んだ回数</div>
-            </div>
-        </div>
-    </div>
-  `;
-
-
   container.innerHTML = html;
 }
 
@@ -208,21 +187,6 @@ async function renderProfilePage() {
         </button>
     </div>
 
-    <!-- Stats Cards -->
-    <div style="background: #0f172a; padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-        <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">書いた日記</div>
-          <div style="font-size: 2rem; font-weight: bold;">${srsStats.total}</div>
-        </div>
-        <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">振り返り回数</div>
-          <div style="font-size: 2rem; font-weight: bold;">${stats.total_reviews || 0}</div>
-        </div>
-        <div>
-          <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">続けた日数</div>
-          <div style="font-size: 2rem; font-weight: bold;">${stats.longest_streak || 0} 日</div>
-        </div>
     </div>
   `;
 
