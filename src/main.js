@@ -25,10 +25,31 @@ window.state = {
 };
 const state = window.state;
 
+// Branding Subtitles
+const SUBTITLES = [
+    "Record your days, master your English.",
+    "Every day is a story worth telling.",
+    "Small steps lead to big changes.",
+    "Your life, your words.",
+    "Writing is thinking.",
+    "Today is a new page.",
+    "The sky is the limit.",
+    "Every day is Day One."
+];
+
+function setRandomSubtitle() {
+    const subtitleEl = document.getElementById('daily-subtitle');
+    if (subtitleEl) {
+        const random = SUBTITLES[Math.floor(Math.random() * SUBTITLES.length)];
+        subtitleEl.textContent = random;
+    }
+}
+
 /**
  * Initialize the application
  */
 async function init() {
+    setRandomSubtitle();
     await window.auth.initAuth();
 
     const authContainer = document.getElementById('auth-ui-container');
