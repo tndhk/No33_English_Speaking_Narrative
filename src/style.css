@@ -661,8 +661,9 @@ input[type="range"] {
 
 /* Footer & Auth Styling */
 .app-footer {
-    margin-top: 4rem;
-    padding: 2rem 0;
+    margin-top: 2rem;
+    padding: 1.5rem 0;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--border-color);
     text-align: center;
 }
