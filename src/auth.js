@@ -186,7 +186,12 @@ export function renderAuthUI(container) {
       const logoutBtn = document.createElement('button');
       logoutBtn.className = 'btn-link';
       logoutBtn.textContent = 'Logout';
-      logoutBtn.onclick = () => signOut();
+      logoutBtn.onclick = async () => {
+        const result = await signOut();
+        if (!result.success) {
+          alert('ログアウトに失敗しました: ' + result.error);
+        }
+      };
 
       wrapper.appendChild(email);
       wrapper.appendChild(logoutBtn);
