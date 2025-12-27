@@ -376,7 +376,7 @@ button.secondary:hover {
   }
 
   #step-content {
-    padding-bottom: 2rem;
+    padding-bottom: 9rem;
     /* Significant padding to prevent sticky buttons overlap */
   }
 

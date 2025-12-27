@@ -267,7 +267,7 @@ function handleCategorySelection(itemElement, categoryId) {
  */
 function renderQuestionForm(container) {
   const qList = QUESTIONS[state.category];
-  container.innerHTML = '<h2>詳細を教えてください（日本語でOK）</h2>';
+  container.innerHTML = '<h2>日本語で教えてください</h2>';
 
   qList.forEach((q, i) => {
     const group = document.createElement('div');
