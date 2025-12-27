@@ -33,7 +33,7 @@ body {
 
 header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 h1 {
@@ -946,14 +946,14 @@ input[type='range'] {
 
 /* Landing Page Styles */
 .lp-container {
-  padding: 1rem 0;
+  padding: 0;
   animation: fadeIn 0.8s ease-out;
 }
 
 .lp-hero {
   text-align: center;
-  margin-bottom: 2rem;
-  padding: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
 }
 
 .lp-tagline {
@@ -966,6 +966,7 @@ input[type='range'] {
 }
 
 .lp-headline {
+  margin-top: 0;
   font-size: 2rem;
   line-height: 1.2;
   margin-bottom: 1rem;
