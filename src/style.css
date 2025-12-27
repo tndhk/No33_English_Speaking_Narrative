@@ -45,6 +45,15 @@ h1 {
   margin-bottom: 0.5rem;
 }
 
+.app-icon {
+  display: block;
+  width: 120px;
+  height: 120px;
+  margin: 0.5rem auto 1rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .subtitle {
   color: var(--text-secondary);
   font-size: 1.1rem;
@@ -1231,7 +1240,7 @@ input[type='range'] {
   /* Bento grid specific layout */
   .bento-grid .bento-card:nth-child(1) {
     grid-column: 1 / 3;
-    grid-row: 1 / 3;
+    grid-row: 1 / 2;
   }
 
   .bento-grid .bento-card:nth-child(2) {
@@ -1246,7 +1255,7 @@ input[type='range'] {
 
   .bento-grid .bento-card:nth-child(4) {
     grid-column: 1 / 3;
-    grid-row: 3 / 4;
+    grid-row: 2 / 3;
   }
 }
 
@@ -1440,21 +1449,33 @@ input[type='range'] {
   transform: translateY(0) rotate(-2deg);
   z-index: 3;
   left: 0;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(255, 255, 255, 0.95));
+  background: linear-gradient(
+    135deg,
+    rgba(56, 189, 248, 0.15),
+    rgba(255, 255, 255, 0.95)
+  );
 }
 
 .srs-card-2 {
   transform: translateY(15px) translateX(10px) rotate(1deg);
   z-index: 2;
   opacity: 0.85;
-  background: linear-gradient(135deg, rgba(129, 140, 248, 0.15), rgba(255, 255, 255, 0.95));
+  background: linear-gradient(
+    135deg,
+    rgba(129, 140, 248, 0.15),
+    rgba(255, 255, 255, 0.95)
+  );
 }
 
 .srs-card-3 {
   transform: translateY(30px) translateX(20px) rotate(-1deg);
   z-index: 1;
   opacity: 0.7;
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(255, 255, 255, 0.95));
+  background: linear-gradient(
+    135deg,
+    rgba(34, 211, 238, 0.15),
+    rgba(255, 255, 255, 0.95)
+  );
 }
 
 .bento-card:hover .srs-card-1 {
