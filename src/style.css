@@ -373,6 +373,23 @@ button.secondary:hover {
   #app {
     max-width: 100%;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  #app-content,
+  #main-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  #wizard-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
   }
 
   #step-content {
