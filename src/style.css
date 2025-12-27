@@ -1093,7 +1093,14 @@ input[type='range'] {
   }
 
   .lp-headline {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+  }
+
+  .lp-description {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
   }
 
   .desktop-only {
@@ -1102,6 +1109,7 @@ input[type='range'] {
 
   .lp-hero {
     margin-bottom: 1.5rem;
+    padding: 2rem 1rem;
   }
 
   .lp-features {
@@ -1113,24 +1121,24 @@ input[type='range'] {
   }
 
   .bento-card {
-    padding: 1.5rem 1.25rem;
+    padding: 1rem 1rem;
     min-height: auto;
   }
 
   .bento-illustration {
-    font-size: 3rem;
-    margin-bottom: 0.75rem;
+    font-size: 2.25rem;
+    margin-bottom: 0.25rem;
   }
 
   .bento-card h3 {
-    font-size: 1.1rem;
-    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+    margin-bottom: 0.15rem;
   }
 
   .bento-card p {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     max-width: 100%;
-    line-height: 1.4;
+    line-height: 1.3;
   }
 }
 
@@ -1166,10 +1174,11 @@ input[type='range'] {
 
 .lp-headline {
   font-family: 'Outfit', sans-serif;
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 800;
-  line-height: 1.2;
-  margin-bottom: 1.5rem;
+  line-height: 1.3;
+  margin-bottom: 1.2rem;
+  letter-spacing: -0.02em;
   background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1177,7 +1186,7 @@ input[type='range'] {
 
 @media (min-width: 768px) {
   .lp-headline {
-    font-size: 3.5rem;
+    font-size: 2.5rem;
   }
 }
 
@@ -1216,7 +1225,7 @@ input[type='range'] {
   background: rgba(30, 41, 59, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-3xl);
-  padding: 2rem 1.75rem;
+  padding: 1.5rem 1.5rem;
   position: relative;
   overflow: hidden;
   transition:
@@ -1299,7 +1308,7 @@ input[type='range'] {
   font-family: 'Outfit', sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
   color: var(--text-primary);
   z-index: 2;
 }
@@ -1307,7 +1316,7 @@ input[type='range'] {
 .bento-card p {
   font-size: 1rem;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.4;
   max-width: 300px;
   z-index: 2;
   margin: 0;
@@ -1316,7 +1325,7 @@ input[type='range'] {
 /* Illustrations (Emojis with 3D feel) */
 .bento-illustration {
   font-size: 4.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.3));
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   z-index: 2;
