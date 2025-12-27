@@ -393,6 +393,12 @@ button.secondary:hover {
   }
 
   #step-content {
+    padding-bottom: 2rem;
+    /* Default padding for step 0 (category selection) */
+  }
+
+  /* Only add large padding when sticky actions are present (steps 1 and 2) */
+  #wizard-container:has(.sticky-actions) #step-content {
     padding-bottom: 9rem;
     /* Significant padding to prevent sticky buttons overlap */
   }
