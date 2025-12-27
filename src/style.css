@@ -1487,6 +1487,117 @@ input[type='range'] {
   font-size: 1.5rem;
 }
 
+/* Alternatives Preview (Expression Variations) */
+.alternatives-preview {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  max-width: 700px;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  z-index: 1;
+}
+
+.alt-option {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  flex: 1;
+  min-width: 180px;
+  max-width: 220px;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  text-align: left;
+}
+
+.alt-option-1 {
+  transform: translateY(0) rotate(-1deg);
+  border-color: rgba(168, 85, 247, 0.3);
+  box-shadow: 0 8px 20px -5px rgba(168, 85, 247, 0.2);
+}
+
+.alt-option-2 {
+  transform: translateY(0) rotate(0deg);
+  border-color: rgba(56, 189, 248, 0.3);
+  box-shadow: 0 8px 20px -5px rgba(56, 189, 248, 0.2);
+}
+
+.alt-option-3 {
+  transform: translateY(0) rotate(1deg);
+  border-color: rgba(34, 197, 94, 0.3);
+  box-shadow: 0 8px 20px -5px rgba(34, 197, 94, 0.2);
+}
+
+.bento-card:hover .alt-option-1 {
+  transform: translateY(-5px) rotate(-2deg);
+  box-shadow: 0 12px 30px -5px rgba(168, 85, 247, 0.4);
+}
+
+.bento-card:hover .alt-option-2 {
+  transform: translateY(-8px) rotate(0deg);
+  box-shadow: 0 14px 35px -5px rgba(56, 189, 248, 0.4);
+}
+
+.bento-card:hover .alt-option-3 {
+  transform: translateY(-5px) rotate(2deg);
+  box-shadow: 0 12px 30px -5px rgba(34, 197, 94, 0.4);
+}
+
+.alt-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.25rem 0.65rem;
+  border-radius: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.alt-option-1 .alt-tag {
+  background: linear-gradient(135deg, #a855f7 0%, #c084fc 100%);
+  color: white;
+}
+
+.alt-option-2 .alt-tag {
+  background: linear-gradient(135deg, #38bdf8 0%, #7dd3fc 100%);
+  color: white;
+}
+
+.alt-option-3 .alt-tag {
+  background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
+  color: white;
+}
+
+.alt-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1e293b;
+  line-height: 1.5;
+}
+
+/* Responsive adjustments for alternatives */
+@media (max-width: 768px) {
+  .alternatives-preview {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .alt-option {
+    max-width: 100%;
+    transform: rotate(0deg) !important;
+  }
+
+  .bento-card:hover .alt-option-1,
+  .bento-card:hover .alt-option-2,
+  .bento-card:hover .alt-option-3 {
+    transform: translateY(-3px) rotate(0deg);
+  }
+}
+
 .lp-footer {
   text-align: center;
   margin-top: 3rem;
