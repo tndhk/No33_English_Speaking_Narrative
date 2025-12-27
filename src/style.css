@@ -329,7 +329,7 @@ button.secondary:hover {
 
 @media (max-width: 480px) {
   body {
-    padding: 1rem 1rem calc(8rem + env(safe-area-inset-bottom));
+    padding: 1rem 1rem calc(4rem + env(safe-area-inset-bottom));
     /* Add bottom padding for nav bar */
     align-items: flex-start;
     /* Prevent vertical centering affecting long content */
@@ -376,7 +376,7 @@ button.secondary:hover {
   }
 
   #step-content {
-    padding-bottom: 8rem;
+    padding-bottom: 2rem;
     /* Significant padding to prevent sticky buttons overlap */
   }
 
@@ -830,6 +830,20 @@ input[type='range'] {
 
   .auth-form {
     padding: 1.5rem;
+  }
+
+  .option-item {
+    padding: 1rem;
+  }
+
+  .option-item strong {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .option-item p {
+    font-size: 0.85rem;
+    line-height: 1.4;
   }
 
   .user-info {
