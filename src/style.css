@@ -36,17 +36,6 @@ header {
   margin-bottom: 1.5rem;
 }
 
-/* Hide subtitle on LP, show only on app */
-#auth-required ~ #app-content .subtitle,
-#app-content .subtitle {
-  display: block;
-}
-
-#auth-required:not([style*='none']) ~ header .subtitle,
-body:has(#auth-required:not([style*='none'])) header .subtitle {
-  display: none;
-}
-
 h1 {
   font-family: 'Outfit', sans-serif;
   font-size: 2.5rem;

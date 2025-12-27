@@ -83,9 +83,6 @@ function handleAuthStateChange(event) {
 function showApp() {
   document.getElementById('app-content').style.display = 'block';
   document.getElementById('auth-required').style.display = 'none';
-  // Re-show subtitle when in app view
-  const subtitle = document.getElementById('daily-subtitle');
-  if (subtitle) subtitle.style.display = 'block';
 
   if (!window.appInitialized) {
     initializeApp();
@@ -103,9 +100,6 @@ function showApp() {
 function showLogin() {
   document.getElementById('app-content').style.display = 'none';
   document.getElementById('auth-required').style.display = 'block';
-  // Hide random subtitle on LP to avoid duplication with LP headline
-  const subtitle = document.getElementById('daily-subtitle');
-  if (subtitle) subtitle.style.display = 'none';
 }
 
 /**
