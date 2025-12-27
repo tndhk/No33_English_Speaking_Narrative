@@ -706,6 +706,21 @@ input[type='range'] {
   text-align: center;
 }
 
+.app-footer-links {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.app-footer-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.app-footer-links a:hover {
+  color: var(--accent-color);
+}
+
 .auth-footer-content {
   display: flex;
   flex-direction: column;
