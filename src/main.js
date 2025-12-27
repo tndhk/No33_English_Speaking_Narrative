@@ -53,9 +53,6 @@ async function init() {
   setRandomSubtitle();
   await window.auth.initAuth();
 
-  const authContainer = document.getElementById('auth-ui-container');
-  window.auth.renderAuthUI(authContainer);
-
   window.addEventListener('authStateChanged', handleAuthStateChange);
 
   if (window.auth.isAuthenticated()) {
