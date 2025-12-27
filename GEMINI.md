@@ -1,8 +1,8 @@
-# kaku (formerly My English Journal)
+# kaku
 
 ## Project Overview
 
-This is a web application designed to help users improve their English speaking skills by writing diaries. It uses an AI (likely Google Gemini) to generate English journal entries from user input. The frontend is built with vanilla JavaScript and Vite, and the backend is powered by Cloudflare Pages Functions. Supabase is used for the database and user authentication.
+kaku is a web application designed to help users improve their English speaking skills by writing diaries. It uses Google Gemini (Flash Lite, 2.5 Flash, 3.0 Flash) to generate English journal entries from user input. The frontend is built with vanilla JavaScript and Vite, and the backend is powered by Cloudflare Pages Functions. Supabase is used for the database and user authentication.
 
 ## Building and Running
 
@@ -28,10 +28,18 @@ To run the backend only:
 npm run dev:backend
 ```
 
+### Quality Control
+
+The project uses ESLint, Prettier, and Husky to maintain code quality.
+
+- **Linting:** Run `npm run lint` to check for issues.
+- **Formatting:** Run `npm run format` to fix formatting issues.
+- **Pre-commit Hooks:** Husky ensures that linting and formatting checks pass before committing.
+
 ### Environment Variables
 
 - **Frontend:** Managed via `.env`.
-- **Backend (Cloudflare):** Managed via `.dev.vars` for local development. This is where `GEMINI_API_KEY`, `DEEPSEEK_API_KEY`, and Supabase credentials for the backend should be stored.
+- **Backend (Cloudflare):** Managed via `.dev.vars` for local development. This is where `GEMINI_API_KEY` (required) and Supabase credentials for the backend should be stored.
 
 ## Development Conventions
 
