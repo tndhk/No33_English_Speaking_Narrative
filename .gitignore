@@ -8,6 +8,21 @@ dist/
 # System files
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Testing
+coverage/
+
+# Editor/IDE
+.idea/
 
 # Secrets & Local Configurations
 .env
