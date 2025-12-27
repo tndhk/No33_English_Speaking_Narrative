@@ -23,7 +23,7 @@ async function renderReviewDashboard() {
   container.classList.add('view-enter');
 
   const dueToday = (await window.storage?.getNarrativesDueToday()) || [];
-  const stats = (await window.storage?.getSRSStats()) || {};
+  (await window.storage?.getSRSStats()) || {};
   const narratives = (await window.storage?.getAllNarratives()) || [];
 
   // Pick a "Featured Memory" with priority:

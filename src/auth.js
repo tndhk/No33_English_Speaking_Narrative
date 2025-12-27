@@ -228,12 +228,6 @@ export function renderAuthUI(container) {
   }
 }
 
-/**
- * Set up authentication form handlers
- */
-function setupAuthFormHandlers() {
-  // This function is no longer needed
-}
 
 /**
  * Update auth UI (called when auth state changes)
@@ -260,35 +254,6 @@ function updateAuthUI() {
   }
 }
 
-/**
- * Convert Supabase error messages to Japanese
- */
-function getJapaneseErrorMessage(error) {
-  const errorMessages = {
-    'Invalid login credentials': 'メールアドレスまたはパスワードが正しくありません',
-    'Email not confirmed': 'メールアドレスが確認されていません',
-    'User already registered': 'このメールアドレスは既に登録されています',
-    'Password should be at least 6 characters': 'パスワードは6文字以上である必要があります',
-    'Unable to validate email address': 'メールアドレスの形式が正しくありません',
-    'Signup requires a valid password': 'パスワードを入力してください',
-    'Invalid email': 'メールアドレスの形式が正しくありません',
-  };
-
-  // Check for exact matches
-  if (errorMessages[error]) {
-    return errorMessages[error];
-  }
-
-  // Check for partial matches
-  for (const [key, value] of Object.entries(errorMessages)) {
-    if (error.includes(key)) {
-      return value;
-    }
-  }
-
-  // Default error message
-  return `エラー: ${error}`;
-}
 
 // Export for global access
 window.auth = {

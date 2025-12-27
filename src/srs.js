@@ -214,12 +214,6 @@ async function updateNarrativeSRS(id, srsData) {
   return await window.storage?.updateNarrativeSRS(id, srsData) || null;
 }
 
-/**
- * Get all narratives (Async wrapper)
- */
-async function getAllNarratives() {
-  return await window.storage?.getAllNarratives() || [];
-}
 
 /**
  * Update SRS stats (Async wrapper)
@@ -372,9 +366,6 @@ function estimateMasteryDate(narrative) {
   // Estimate based on remaining intervals and average quality
   let estimatedDays = 0;
   // ... (Calculation logic remains same)
-  const avgQuality = quality_history.length > 0
-    ? quality_history.reduce((a, b) => a + b, 0) / quality_history.length
-    : REVIEW_QUALITY.GOOD;
 
   // Simple estimate: assume GOOD quality for remaining intervals
   for (let i = interval_index; i < SRS_INTERVALS.length - 1; i++) {

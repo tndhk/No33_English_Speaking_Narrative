@@ -227,9 +227,6 @@ function renderReviewSession() {
   const narrative = getCurrentNarrative();
   if (!narrative) return;
 
-  const progress = getSessionProgress();
-  const questionsLines = narrative.recall_test.prompt_ja.split('\n');
-
   const dateStr = new Date(narrative.created_at).toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: 'long',
@@ -383,8 +380,7 @@ async function renderSessionComplete() {
   void container.offsetWidth;
   container.classList.add('view-enter');
 
-  const summary = getSessionSummary();
-  const stats = (await window.storage?.getSRSStats()) || {};
+  (await window.storage?.getSRSStats()) || {};
 
   const wrapper = document.createElement('div');
   wrapper.style.cssText = 'text-align: center; padding: 2rem 0;';
@@ -441,7 +437,7 @@ window.rateReview = async function (quality) {
 };
 
 window.toggleAnswer = function () {
-  const visible = window.toggleAnswerVisibility();
+  window.toggleAnswerVisibility();
   window.renderReviewSession();
 };
 
