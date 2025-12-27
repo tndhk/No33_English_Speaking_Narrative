@@ -12,6 +12,7 @@ export const VIEW = {
 export const SETTINGS_DEFAULTS = {
   LENGTH: 'Normal',
   TONE: 'Business',
+  DIFFICULTY: 'Normal',
   VOICE: null,
   RATE: 1.0,
 };

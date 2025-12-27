@@ -16,6 +16,7 @@ window.state = {
   settings: {
     length: SETTINGS_DEFAULTS.LENGTH,
     tone: SETTINGS_DEFAULTS.TONE,
+    difficulty: SETTINGS_DEFAULTS.DIFFICULTY,
     voice: SETTINGS_DEFAULTS.VOICE,
     rate: SETTINGS_DEFAULTS.RATE,
   },
@@ -308,6 +309,11 @@ function renderQuestionForm(container) {
 function renderOutputSettings(container) {
   container.innerHTML = '<h2>出力設定</h2>';
   renderSettingOption(container, '長さ', 'length', ['Short', 'Normal', 'Long']);
+  renderSettingOption(container, '難易度', 'difficulty', [
+    'Easy',
+    'Normal',
+    'Hard',
+  ]);
   renderSettingOption(container, 'トーン', 'tone', [
     'Casual',
     'Business',
