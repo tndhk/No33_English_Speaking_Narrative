@@ -331,8 +331,7 @@ button.secondary:hover {
   body {
     padding: 1rem 1rem calc(4rem + env(safe-area-inset-bottom));
     /* Add bottom padding for nav bar */
-    align-items: flex-start;
-    /* Prevent vertical centering affecting long content */
+    align-items: stretch;
     min-height: 100dvh;
   }
 
@@ -360,7 +359,7 @@ button.secondary:hover {
 
   .card {
     padding: 1.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 0; /* Removed margin-bottom since it's stretching */
     /* Ensure space below cards */
   }
 
@@ -385,7 +384,8 @@ button.secondary:hover {
     flex: 1;
   }
 
-  #wizard-container {
+  #wizard-container,
+  #result-container {
     flex: 1;
     display: flex;
     flex-direction: column;
