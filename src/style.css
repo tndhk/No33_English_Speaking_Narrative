@@ -713,7 +713,7 @@ input[type='range'] {
 
 #auth-required {
   text-align: center;
-  padding: 3rem 1rem;
+  padding: 1rem;
 }
 
 #auth-required h2 {
@@ -801,6 +801,10 @@ input[type='range'] {
 @media (max-width: 480px) {
   body {
     padding: 1rem;
+  }
+
+  header {
+    margin-bottom: 0.5rem;
   }
 
   h1 {
