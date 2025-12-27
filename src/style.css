@@ -1358,6 +1358,59 @@ input[type='range'] {
   }
 }
 
+/* Output Preview (English Diary Style) */
+.output-preview {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1e293b;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 2rem;
+  transform: rotate(2deg);
+  box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3);
+  position: relative;
+  text-align: left;
+  z-index: 1;
+  transition: transform 0.4s ease;
+  border: 2px solid rgba(139, 92, 246, 0.2);
+}
+
+.bento-card:hover .output-preview {
+  transform: rotate(0deg) scale(1.02);
+  box-shadow: 0 12px 30px -5px rgba(139, 92, 246, 0.4);
+}
+
+.output-preview .preview-date {
+  font-size: 0.75rem;
+  color: #8b5cf6;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.output-preview .preview-text {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.ai-badge {
+  position: absolute;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  color: white;
+  padding: 0.4rem 0.9rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  top: 12%;
+  right: -8%;
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.5);
+  transform: rotate(-8deg);
+  animation: float 3s ease-in-out infinite;
+}
+
 .lp-footer {
   text-align: center;
   margin-top: 3rem;
