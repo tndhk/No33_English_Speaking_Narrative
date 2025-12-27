@@ -1240,7 +1240,7 @@ input[type='range'] {
   /* Bento grid specific layout */
   .bento-grid .bento-card:nth-child(1) {
     grid-column: 1 / 3;
-    grid-row: 1 / 3;
+    grid-row: 1 / 2;
   }
 
   .bento-grid .bento-card:nth-child(2) {
@@ -1255,7 +1255,7 @@ input[type='range'] {
 
   .bento-grid .bento-card:nth-child(4) {
     grid-column: 1 / 3;
-    grid-row: 3 / 4;
+    grid-row: 2 / 3;
   }
 }
 
