@@ -10,7 +10,10 @@ const validateSchema = (data) => {
 
   // narrative_en
   if (typeof data.narrative_en !== 'string' || data.narrative_en.length < 1) {
-    errors.push({ instancePath: '/narrative_en', message: 'Must be a non-empty string' });
+    errors.push({
+      instancePath: '/narrative_en',
+      message: 'Must be a non-empty string',
+    });
   }
 
   // key_phrases
@@ -19,12 +22,27 @@ const validateSchema = (data) => {
   } else {
     data.key_phrases.forEach((item, i) => {
       if (typeof item !== 'object') {
-        errors.push({ instancePath: `/key_phrases/${i}`, message: 'Must be an object' });
+        errors.push({
+          instancePath: `/key_phrases/${i}`,
+          message: 'Must be an object',
+        });
         return;
       }
-      if (!item.phrase_en) errors.push({ instancePath: `/key_phrases/${i}/phrase_en`, message: 'Missing phrase_en' });
-      if (!item.meaning_ja) errors.push({ instancePath: `/key_phrases/${i}/meaning_ja`, message: 'Missing meaning_ja' });
-      if (!item.usage_hint_ja) errors.push({ instancePath: `/key_phrases/${i}/usage_hint_ja`, message: 'Missing usage_hint_ja' });
+      if (!item.phrase_en)
+        errors.push({
+          instancePath: `/key_phrases/${i}/phrase_en`,
+          message: 'Missing phrase_en',
+        });
+      if (!item.meaning_ja)
+        errors.push({
+          instancePath: `/key_phrases/${i}/meaning_ja`,
+          message: 'Missing meaning_ja',
+        });
+      if (!item.usage_hint_ja)
+        errors.push({
+          instancePath: `/key_phrases/${i}/usage_hint_ja`,
+          message: 'Missing usage_hint_ja',
+        });
     });
   }
 
@@ -34,12 +52,27 @@ const validateSchema = (data) => {
   } else {
     data.alternatives.forEach((item, i) => {
       if (typeof item !== 'object') {
-        errors.push({ instancePath: `/alternatives/${i}`, message: 'Must be an object' });
+        errors.push({
+          instancePath: `/alternatives/${i}`,
+          message: 'Must be an object',
+        });
         return;
       }
-      if (!item.original_en) errors.push({ instancePath: `/alternatives/${i}/original_en`, message: 'Missing original_en' });
-      if (!item.alternative_en) errors.push({ instancePath: `/alternatives/${i}/alternative_en`, message: 'Missing alternative_en' });
-      if (!item.nuance_ja) errors.push({ instancePath: `/alternatives/${i}/nuance_ja`, message: 'Missing nuance_ja' });
+      if (!item.original_en)
+        errors.push({
+          instancePath: `/alternatives/${i}/original_en`,
+          message: 'Missing original_en',
+        });
+      if (!item.alternative_en)
+        errors.push({
+          instancePath: `/alternatives/${i}/alternative_en`,
+          message: 'Missing alternative_en',
+        });
+      if (!item.nuance_ja)
+        errors.push({
+          instancePath: `/alternatives/${i}/nuance_ja`,
+          message: 'Missing nuance_ja',
+        });
     });
   }
 
@@ -47,9 +80,16 @@ const validateSchema = (data) => {
   if (!data.recall_test || typeof data.recall_test !== 'object') {
     errors.push({ instancePath: '/recall_test', message: 'Must be an object' });
   } else {
-    if (!data.recall_test.prompt_ja) errors.push({ instancePath: '/recall_test/prompt_ja', message: 'Missing prompt_ja' });
+    if (!data.recall_test.prompt_ja)
+      errors.push({
+        instancePath: '/recall_test/prompt_ja',
+        message: 'Missing prompt_ja',
+      });
     if (!Array.isArray(data.recall_test.expected_points_en)) {
-      errors.push({ instancePath: '/recall_test/expected_points_en', message: 'Must be an array' });
+      errors.push({
+        instancePath: '/recall_test/expected_points_en',
+        message: 'Must be an array',
+      });
     }
   }
 
@@ -63,7 +103,8 @@ function countSentences(text) {
 
 // Helper function to count Japanese characters
 function getJapaneseCharCount(text) {
-  return (text.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/g) || []).length;
+  return (text.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/g) || [])
+    .length;
 }
 
 // Comprehensive validation function with detailed logging
@@ -73,7 +114,7 @@ function validateOutput(jsonData, settings = {}) {
   const logContext = {
     timestamp: new Date().toISOString(),
     schemaVersion: '1.0',
-    validationType: 'comprehensive'
+    validationType: 'comprehensive',
   };
 
   // Step 1: Schema validation using manual validator
@@ -85,11 +126,11 @@ function validateOutput(jsonData, settings = {}) {
     console.error('[VALIDATION] Schema validation failed', {
       ...logContext,
       errors: schemaErrors,
-      data: jsonData
+      data: jsonData,
     });
 
     // Collect all schema validation errors
-    schemaErrors.forEach(err => {
+    schemaErrors.forEach((err) => {
       const path = err.instancePath || 'root';
       const message = `${path}: ${err.message}`;
       errors.push(message);
@@ -117,7 +158,7 @@ function validateOutput(jsonData, settings = {}) {
       sentenceCount,
       expectedRange,
       tolerance,
-      valid: sentenceCount >= minExpected && sentenceCount <= maxExpected
+      valid: sentenceCount >= minExpected && sentenceCount <= maxExpected,
     });
 
     if (sentenceCount < minExpected || sentenceCount > maxExpected) {
@@ -131,13 +172,14 @@ function validateOutput(jsonData, settings = {}) {
   if (isSchemaValid && jsonData.narrative_en) {
     const japaneseCharCount = getJapaneseCharCount(jsonData.narrative_en);
     const totalCharCount = jsonData.narrative_en.length;
-    const japanesePercent = totalCharCount > 0 ? (japaneseCharCount / totalCharCount) * 100 : 0;
+    const japanesePercent =
+      totalCharCount > 0 ? (japaneseCharCount / totalCharCount) * 100 : 0;
 
     console.log('[VALIDATION] Japanese character check', {
       japaneseCharCount,
       totalCharCount,
       japanesePercent: japanesePercent.toFixed(2) + '%',
-      maxAllowed: '10%'
+      maxAllowed: '10%',
     });
 
     if (japanesePercent > 10) {
@@ -185,7 +227,9 @@ function validateOutput(jsonData, settings = {}) {
     if (!jsonData.recall_test.prompt_ja?.trim()) {
       errors.push('recall_test.prompt_ja is empty');
     }
-    if (!jsonData.recall_test.expected_points_en?.every(point => point?.trim())) {
+    if (
+      !jsonData.recall_test.expected_points_en?.every((point) => point?.trim())
+    ) {
       errors.push('recall_test.expected_points_en contains empty values');
     }
   }
@@ -196,7 +240,7 @@ function validateOutput(jsonData, settings = {}) {
     ...logContext,
     isValid,
     errorCount: errors.length,
-    warningCount: warnings.length
+    warningCount: warnings.length,
   });
 
   if (!isValid) {
@@ -207,27 +251,29 @@ function validateOutput(jsonData, settings = {}) {
     isValid,
     errors,
     warnings,
-    metadata: logContext
+    metadata: logContext,
   };
 }
 
 // Call Gemini API
-async function callGemini(systemPrompt, env) {
-  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${env.GEMINI_API_KEY}`;
-  console.log('Calling Gemini API...');
+async function callGemini(model, systemPrompt, env) {
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
+  console.log(`Calling Gemini API (${model})...`);
 
   const response = await fetch(geminiUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: systemPrompt }] }],
-      generationConfig: { response_mime_type: "application/json" }
-    })
+      generationConfig: { response_mime_type: 'application/json' },
+    }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+    throw new Error(
+      `Gemini API error (${model}): ${response.status} - ${errorText}`
+    );
   }
 
   const data = await response.json();
@@ -242,15 +288,13 @@ async function callDeepSeek(systemPrompt, env) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${env.DEEPSEEK_API_KEY}`
+      Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`,
     },
     body: JSON.stringify({
       model: 'deepseek-chat',
-      messages: [
-        { role: 'user', content: systemPrompt }
-      ],
-      response_format: { type: 'json_object' }
-    })
+      messages: [{ role: 'user', content: systemPrompt }],
+      response_format: { type: 'json_object' },
+    }),
   });
 
   if (!response.ok) {
@@ -270,15 +314,13 @@ async function callGrok(systemPrompt, env) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${env.GROK_API_KEY}`
+      Authorization: `Bearer ${env.GROK_API_KEY}`,
     },
     body: JSON.stringify({
       model: 'grok-4-fast',
-      messages: [
-        { role: 'user', content: systemPrompt }
-      ],
-      response_format: { type: 'json_object' }
-    })
+      messages: [{ role: 'user', content: systemPrompt }],
+      response_format: { type: 'json_object' },
+    }),
   });
 
   if (!response.ok) {
@@ -293,9 +335,18 @@ async function callGrok(systemPrompt, env) {
 // Main function with fallback logic
 async function generateWithFallback(systemPrompt, env, settings = {}) {
   const providers = [
-    { name: 'Gemini', fn: () => callGemini(systemPrompt, env) },
-    { name: 'DeepSeek', fn: () => callDeepSeek(systemPrompt, env) },
-    { name: 'Grok', fn: () => callGrok(systemPrompt, env) }
+    {
+      name: 'Gemini Flash Lite',
+      fn: () => callGemini('gemini-flash-lite-latest', systemPrompt, env),
+    },
+    {
+      name: 'Gemini 2.5 Flash',
+      fn: () => callGemini('gemini-2.5-flash-latest', systemPrompt, env),
+    },
+    {
+      name: 'Gemini 3 Flash',
+      fn: () => callGemini('gemini-3-flash-preview', systemPrompt, env),
+    },
   ];
 
   for (const provider of providers) {
@@ -317,15 +368,17 @@ async function generateWithFallback(systemPrompt, env, settings = {}) {
         const errorDetails = {
           provider: provider.name,
           errors: validation.errors,
-          timestamp: validation.metadata.timestamp
+          timestamp: validation.metadata.timestamp,
         };
-        console.error('[VALIDATION] Validation failed for provider', errorDetails);
+        console.error(
+          '[VALIDATION] Validation failed for provider',
+          errorDetails
+        );
         throw new Error(`Validation failed: ${validation.errors.join('; ')}`);
       }
 
       console.log(`${provider.name} succeeded with valid output`);
       return resultText;
-
     } catch (error) {
       console.error(`${provider.name} failed:`, error.message);
 
@@ -345,20 +398,26 @@ export async function onRequestPost(context) {
 
   // Check for critical variables
   if (!env.GEMINI_API_KEY && !env.DEEPSEEK_API_KEY) {
-    console.error("Missing GEMINI_API_KEY and DEEPSEEK_API_KEY");
-    return new Response(JSON.stringify({ error: "Server Configuration Error: Missing API Keys" }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    console.error('Missing GEMINI_API_KEY and DEEPSEEK_API_KEY');
+    return new Response(
+      JSON.stringify({ error: 'Server Configuration Error: Missing API Keys' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 
   // --- Authentication Check ---
   const authHeader = request.headers.get('Authorization');
   if (!authHeader) {
-    return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }),
+      {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 
   try {
@@ -367,14 +426,20 @@ export async function onRequestPost(context) {
       env.VITE_SUPABASE_URL,
       env.VITE_SUPABASE_ANON_KEY
     );
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser(token);
 
     if (error || !user) {
       console.error('Auth error:', error);
-      return new Response(JSON.stringify({ error: 'Unauthorized: Invalid token' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: Invalid token' }),
+        {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     // --- Main Logic ---
@@ -382,10 +447,12 @@ export async function onRequestPost(context) {
     console.log('Request received:', { category, answers, settings });
 
     // Escape user inputs to prevent prompt injection
-    const sanitizedAnswers = answers.map((a, i) => {
-      const safeText = (a || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return `  Question ${i + 1}: ${safeText}`;
-    }).join('\n');
+    const sanitizedAnswers = answers
+      .map((a, i) => {
+        const safeText = (a || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `  Question ${i + 1}: ${safeText}`;
+      })
+      .join('\n');
 
     const systemPromptTemplate = `# Role
 You are an expert English journal coach for Japanese learners (TOEIC 400-600).
@@ -441,20 +508,23 @@ ${sanitizedAnswers}
 </input_data>`;
 
     console.log('Using constructed system prompt');
-    const resultText = await generateWithFallback(systemPromptTemplate, env, settings);
+    const resultText = await generateWithFallback(
+      systemPromptTemplate,
+      env,
+      settings
+    );
 
     return new Response(resultText, {
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
-      }
+        'Cache-Control': 'no-cache',
+      },
     });
-
   } catch (error) {
     console.error('Error in generate:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 }
