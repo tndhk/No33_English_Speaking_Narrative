@@ -33,7 +33,18 @@ body {
 
 header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Hide subtitle on LP, show only on app */
+#auth-required ~ #app-content .subtitle,
+#app-content .subtitle {
+  display: block;
+}
+
+#auth-required:not([style*='none']) ~ header .subtitle,
+body:has(#auth-required:not([style*='none'])) header .subtitle {
+  display: none;
 }
 
 h1 {
