@@ -1,4 +1,4 @@
-# My English Journal - ER図
+# kaku (My English Journal) - ER図
 
 ## スキーマ概要 (Supabase)
 
@@ -44,6 +44,7 @@ erDiagram
 ## JSONBカラム詳細
 
 ### `srs_data`
+
 ```json
 {
   "interval_index": 0,
@@ -57,25 +58,29 @@ erDiagram
 ```
 
 ### `recall_test`
+
 ```json
 { "prompt_ja": "日本語のプロンプト" }
 ```
 
 ### `key_phrases`
+
 ```json
 [{ "phrase": "英語フレーズ", "explanation": "説明" }]
 ```
 
 ### `alternatives`
+
 ```json
 [{ "original": "元の表現", "alternative": "代替表現", "nuance": "ニュアンス" }]
 ```
 
 ### `settings`
+
 ```json
 { "length": "Normal", "tone": "Business" }
 ```
 
 ---
 
-*最終更新: 2025-12-27*
+_最終更新: 2025-12-27_

@@ -495,7 +495,7 @@ function renderNarrativeSection(sentences, data) {
         <section class="card" style="background: rgba(30, 41, 59, 0.5); padding: 2rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                 <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-size: 1.2rem;">📖</span> English Journal
+                    <span style="font-size: 1.2rem;">📖</span> kaku
                 </h3>
                 <div style="display:flex; gap:0.75rem;">
                     <button class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="window.speak()">🔊 Full Play</button>

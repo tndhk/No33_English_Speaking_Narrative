@@ -1,4 +1,4 @@
-# My English Journal (formerly Gemini Narrative AI)
+# kaku (formerly My English Journal)
 
 ## Project Overview
 
@@ -17,11 +17,13 @@ npm run dev:full
 This starts the Cloudflare Pages Dev server, which serves the frontend from `src/` and runs the backend functions from `functions/`.
 
 Alternatively, for frontend-only work with Vite:
+
 ```bash
 npm run dev
 ```
 
 To run the backend only:
+
 ```bash
 npm run dev:backend
 ```
@@ -33,6 +35,6 @@ npm run dev:backend
 
 ## Development Conventions
 
-*   **Database:** Supabase is used for the database. Migrations are located in the `supabase/migrations` directory. To create a new migration, run `npx supabase migration new <migration_name>`. Note: After `npx supabase db reset`, existing login sessions in the browser will become invalid.
-*   **Backend:** Backend functions are located in the `functions/api` directory. They use manual validation instead of `ajv` to maintain compatibility with Cloudflare Workers' security policies.
-*   **Frontend:** The frontend source code is in the `src` directory.
+- **Database:** Supabase is used for the database. Migrations are located in the `supabase/migrations` directory. To create a new migration, run `npx supabase migration new <migration_name>`. Note: After `npx supabase db reset`, existing login sessions in the browser will become invalid.
+- **Backend:** Backend functions are located in the `functions/api` directory. They use manual validation instead of `ajv` to maintain compatibility with Cloudflare Workers' security policies.
+- **Frontend:** The frontend source code is in the `src` directory.

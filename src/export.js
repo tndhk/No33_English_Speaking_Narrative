@@ -65,7 +65,7 @@ async function exportAsMarkdown() {
       return;
     }
 
-    let md = '# English Journal Archive\n\n';
+    let md = '# kaku Archive\n\n';
     md += `Generated: ${new Date().toLocaleString('ja-JP')}\n\n`;
     md += `Total Narratives: ${narratives.length}\n\n`;
     md += '---\n\n';
@@ -79,7 +79,7 @@ async function exportAsMarkdown() {
 
       if (n.key_phrases && n.key_phrases.length > 0) {
         md += `### Key Phrases\n\n`;
-        n.key_phrases.forEach(p => {
+        n.key_phrases.forEach((p) => {
           md += `- **${p.phrase_en}** - ${p.meaning_ja}\n`;
           md += `  - ${p.usage_hint_ja}\n`;
         });
@@ -89,9 +89,12 @@ async function exportAsMarkdown() {
       if (n.recall_test) {
         md += `### Recall Test\n\n`;
         md += `**Question:** ${n.recall_test.prompt_ja}\n\n`;
-        if (n.recall_test.expected_points_en && n.recall_test.expected_points_en.length > 0) {
+        if (
+          n.recall_test.expected_points_en &&
+          n.recall_test.expected_points_en.length > 0
+        ) {
           md += `**Expected Points:**\n`;
-          n.recall_test.expected_points_en.forEach(p => {
+          n.recall_test.expected_points_en.forEach((p) => {
             md += `- ${p}\n`;
           });
         }
@@ -134,7 +137,7 @@ function importFromJSON(file) {
           resolve({
             success: true,
             count: imported.length,
-            message: `${imported.length}件の日記（ジャーナル）をインポートしました`
+            message: `${imported.length}件の日記（ジャーナル）をインポートしました`,
           });
         } else {
           reject(new Error('インポートできるナラティブが見つかりません'));
@@ -160,7 +163,7 @@ async function renderExportUI() {
   if (!container) return;
 
   const narratives = (await window.storage?.getAllNarratives()) || [];
-  const stats = (await window.storage?.getStorageStats());
+  const stats = await window.storage?.getStorageStats();
 
   let html = `
     <h2>📤 データをエクスポート</h2>

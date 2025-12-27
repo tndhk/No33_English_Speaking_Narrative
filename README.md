@@ -1,4 +1,4 @@
-# My English Journal
+# kaku (My English Journal)
 
 自分自身の経験や思考を、自然で印象的な英語の日記（ジャーナル）に変換し、スピーキング練習を行うためのAI学習ツール。
 質問に答えるだけで、あなただけの英語日記と復習教材が生成されます。
@@ -6,17 +6,20 @@
 ## 機能
 
 ### コア機能
+
 - **Journal Generation**: ユーザーの入力（日本語）から、レベルに合わせた英語の日記を生成
 - **Personalized Learning**: 文脈に即した重要表現（Key Phrases）、言い換え表現（Alternative Expressions）、理解度を確認するリコールテスト（Recall Test）を提供
 - **Text-to-Speech (TTS)**: 生成された日記を音声で読み上げ。文単位のリピート再生が可能
 
 ### 学習管理機能
+
 - **SRS (Spaced Repetition System)**: 効率的な反復学習のための復習スケジュール管理
 - **Review Dashboard**: 今日の復習項目と「Years Ago Today」（過去の今日の日記）を表示
 - **Calendar View**: 過去の日記をカレンダー形式で閲覧
 - **History**: 日付ごとの日記履歴管理
 
 ### データ管理
+
 - **Database**: Supabase を使用したデータ永続化
 - **User Authentication**: Supabase Auth を使用したユーザー認証と個別データ管理
 - **Export/Import**: JSON, CSV, Markdown 形式でのデータエクスポート・インポート
@@ -32,6 +35,7 @@
 ## セットアップ手順
 
 ### 前提条件
+
 - Node.js (v18以上)
 - Docker (Supabase ローカル実行用)
 - Gemini API Key
@@ -39,12 +43,14 @@
 ### インストール
 
 1. リポジトリをクローン
+
    ```bash
    git clone <repository-url>
    cd EnglishSpeaking251223
    ```
 
 2. 依存関係をインストール
+
    ```bash
    npm install
    ```
@@ -57,16 +63,18 @@
 ### ローカル環境のセットアップ
 
 1. Supabase をローカルで起動
+
    ```bash
    npx supabase start
    ```
-   
+
    初回起動時は Docker イメージのダウンロードに時間がかかります。
    起動後、コンソールに表示される `API URL` と `anon key` を確認してください。
 
 2. 環境変数ファイルを作成
 
    **フロントエンド用 (.env):**
+
    ```text
    VITE_SUPABASE_URL=http://127.0.0.1:54321
    VITE_SUPABASE_ANON_KEY=<anon key from supabase start>
@@ -74,6 +82,7 @@
 
    **バックエンド用 (.dev.vars):**
    Cloudflare Workers (Backend) 用の API キーなどを設定します。
+
    ```text
    GEMINI_API_KEY=your_gemini_api_key
    DEEPSEEK_API_KEY=your_deepseek_api_key
@@ -82,6 +91,7 @@
    ```
 
 3. 開発サーバーを起動
+
    ```bash
    # フロントエンドとバックエンドを同時に起動
    npm run dev:full
@@ -131,12 +141,14 @@ npx supabase db reset
    - 必要に応じて、カスタムメールテンプレートを設定
 
 3. **環境変数の設定**
+
    ```text
    VITE_SUPABASE_URL=https://your-project.supabase.co
    VITE_SUPABASE_ANON_KEY=your-anon-key
    ```
 
 4. **マイグレーションの適用**
+
    ```bash
    # Supabase プロジェクトにリンク
    npx supabase link --project-ref your-project-ref
@@ -186,21 +198,25 @@ RLS ポリシーは `/supabase/migrations/` 内のマイグレーションファ
 このプロジェクトは Vite 開発サーバーと Wrangler Pages Dev サーバーを連携させるプロキシ設定を使用しています。
 
 **フロントエンド開発：**
+
 ```bash
 # 別のターミナルウィンドウで実行
 npm run dev
 ```
+
 - Vite 開発サーバーが `http://localhost:5173` で起動
 - `/api` への API リクエストは自動的にバックエンド（localhost:8787）にプロキシされます
 - コードの変更は自動でリロードされます
 
 **バックエンド開発（オプション）：**
+
 ```bash
 # ローカルでバックエンドをテストする場合は別のターミナルで実行
 # （フロントエンドのプロキシが自動的にリクエストをルーティングします）
 ```
 
 **フル機能テスト（本番環境に近い環境）：**
+
 ```bash
 npm run build      # フロントエンドをビルド
 npm run dev:backend # Wrangler Pages Dev でバックエンド + フロントエンドを起動
