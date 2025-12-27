@@ -1,94 +1,169 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My English Journal</title>
-    <link rel="stylesheet" href="./style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700&display=swap"
-        rel="stylesheet">
-</head>
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
 
-<body>
+  <body>
     <div id="app">
-        <header>
-            <h1>English Chronicle</h1>
-            <p class="subtitle" id="daily-subtitle"></p>
-        </header>
+      <header>
+        <h1>English Chronicle</h1>
+        <p class="subtitle" id="daily-subtitle"></p>
+      </header>
 
-        <!-- Authentication Required Message -->
-        <div id="auth-required" style="display: none;">
-            <div class="card">
-                <h2>ログインが必要です</h2>
-                <p>学習履歴と設定を管理するには、ログインしてください。</p>
-                <div id="login-container" style="margin-top: 2rem;"></div>
+      <!-- Landing Page (Authentication Required) -->
+      <div id="auth-required" style="display: none">
+        <div class="lp-container">
+          <section class="lp-hero">
+            <p class="lp-tagline">Your life, your words.</p>
+            <h2 class="lp-headline">
+              AIと共に綴る、<br />あなただけの英語学習日記
+            </h2>
+            <p class="lp-description">
+              日々の出来事を英語で記録し、AIによる自然な表現の提案と、<br
+                class="desktop-only"
+              />
+              効果的な復習システムで、「使える英語」を身につけよう。
+            </p>
+            <div id="auth-ui-container" class="lp-cta-container"></div>
+          </section>
+
+          <section class="lp-features">
+            <div class="lp-feature-card">
+              <div class="lp-feature-icon">✍️</div>
+              <h3>自由に書く</h3>
+              <p>
+                文法を気にせず、その日の出来事や感情を日記に書き出してみましょう。
+              </p>
             </div>
+            <div class="lp-feature-card">
+              <div class="lp-feature-icon">🤖</div>
+              <h3>AIフィードバック</h3>
+              <p>
+                あなたの英語をAIが分析し、より自然で洗練された表現を提案してくれます。
+              </p>
+            </div>
+            <div class="lp-feature-card">
+              <div class="lp-feature-icon">🧠</div>
+              <h3>効率的な復習</h3>
+              <p>
+                忘却曲線に基づいた学習システムで、学んだ表現を確実に定着させます。
+              </p>
+            </div>
+          </section>
+
+          <footer class="lp-footer">
+            <p>© 2025 English Chronicle. All rights reserved.</p>
+            <p class="lp-privacy">Your entries are private and secure.</p>
+          </footer>
         </div>
+      </div>
 
-        <!-- Main App Content (shown when authenticated) -->
-        <div id="app-content" style="display: none;">
-            <!-- Desktop Navigation Tabs (Hidden on Mobile) -->
-            <nav id="desktop-nav" class="nav-tabs">
-                <button class="nav-tab active" data-view="generate" onclick="window.switchView('generate')">
-                    <span style="font-size: 1.2rem;">✍️</span> 書く
-                </button>
-                <button class="nav-tab" data-view="review" onclick="window.switchView('review')">
-                    <span style="font-size: 1.2rem;">📖</span> 振り返り
-                    <span id="due-badge-desktop" class="badge" style="display: none;"></span>
-                </button>
-                <button class="nav-tab" data-view="history" onclick="window.switchView('history')">
-                    <span style="font-size: 1.2rem;">📅</span> カレンダー
-                </button>
-            </nav>
+      <!-- Main App Content (shown when authenticated) -->
+      <div id="app-content" style="display: none">
+        <!-- Desktop Navigation Tabs (Hidden on Mobile) -->
+        <nav id="desktop-nav" class="nav-tabs">
+          <button
+            class="nav-tab active"
+            data-view="generate"
+            onclick="window.switchView('generate')"
+          >
+            <span style="font-size: 1.2rem">✍️</span> 書く
+          </button>
+          <button
+            class="nav-tab"
+            data-view="review"
+            onclick="window.switchView('review')"
+          >
+            <span style="font-size: 1.2rem">📖</span> 振り返り
+            <span
+              id="due-badge-desktop"
+              class="badge"
+              style="display: none"
+            ></span>
+          </button>
+          <button
+            class="nav-tab"
+            data-view="history"
+            onclick="window.switchView('history')"
+          >
+            <span style="font-size: 1.2rem">📅</span> カレンダー
+          </button>
+        </nav>
 
-            <main id="main-container">
-                <!-- Content will be injected by main.js -->
-                <div id="wizard-container" class="card">
-                    <div id="step-content">
-                        <!-- Steps injected here -->
-                    </div>
-                    <div id="step-actions">
-                        <button id="next-btn" class="primary">Next</button>
-                        <button id="prev-btn" class="secondary" style="display: none;">Back</button>
-                    </div>
-                </div>
-
-                <div id="result-container" class="card" style="display: none;">
-                    <!-- Result displayed here -->
-                </div>
-            </main>
-
-            <!-- Mobile Bottom Navigation (Fixed) -->
-            <nav id="bottom-nav" class="bottom-nav">
-                <button class="bottom-nav-item active" data-view="generate" onclick="window.switchView('generate')">
-                    <div class="icon">✍️</div>
-                    <div class="label">書く</div>
-                </button>
-                <button class="bottom-nav-item" data-view="review" onclick="window.switchView('review')">
-                    <div class="icon-wrapper">
-                        <div class="icon">📖</div>
-                        <span id="due-badge-mobile" class="badge-dot" style="display: none;"></span>
-                    </div>
-                    <div class="label">振り返り</div>
-                </button>
-                <button class="bottom-nav-item" data-view="history" onclick="window.switchView('history')">
-                    <div class="icon">📅</div>
-                    <div class="label">カレンダー</div>
-                </button>
-            </nav>
-
-            <footer class="app-footer">
-                <div id="logout-container"></div>
-            </footer>
-
-            <div id="loading-overlay" style="display: none;">
-                <div class="spinner"></div>
-                <p id="loading-text">Writing your journal entry...</p>
+        <main id="main-container">
+          <!-- Content will be injected by main.js -->
+          <div id="wizard-container" class="card">
+            <div id="step-content">
+              <!-- Steps injected here -->
             </div>
-        </div><!-- End app-content -->
+            <div id="step-actions">
+              <button id="next-btn" class="primary">Next</button>
+              <button id="prev-btn" class="secondary" style="display: none">
+                Back
+              </button>
+            </div>
+          </div>
+
+          <div id="result-container" class="card" style="display: none">
+            <!-- Result displayed here -->
+          </div>
+        </main>
+
+        <!-- Mobile Bottom Navigation (Fixed) -->
+        <nav id="bottom-nav" class="bottom-nav">
+          <button
+            class="bottom-nav-item active"
+            data-view="generate"
+            onclick="window.switchView('generate')"
+          >
+            <div class="icon">✍️</div>
+            <div class="label">書く</div>
+          </button>
+          <button
+            class="bottom-nav-item"
+            data-view="review"
+            onclick="window.switchView('review')"
+          >
+            <div class="icon-wrapper">
+              <div class="icon">📖</div>
+              <span
+                id="due-badge-mobile"
+                class="badge-dot"
+                style="display: none"
+              ></span>
+            </div>
+            <div class="label">振り返り</div>
+          </button>
+          <button
+            class="bottom-nav-item"
+            data-view="history"
+            onclick="window.switchView('history')"
+          >
+            <div class="icon">📅</div>
+            <div class="label">カレンダー</div>
+          </button>
+        </nav>
+
+        <footer class="app-footer">
+          <div id="logout-container"></div>
+        </footer>
+
+        <div id="loading-overlay" style="display: none">
+          <div class="spinner"></div>
+          <p id="loading-text">Writing your journal entry...</p>
+        </div>
+      </div>
+      <!-- End app-content -->
     </div>
     <script type="module" src="./supabase.js"></script>
     <script type="module" src="./auth.js"></script>
@@ -98,6 +173,5 @@
     <script type="module" src="./export.js"></script>
     <script type="module" src="./stats.js"></script>
     <script type="module" src="./main.js"></script>
-</body>
-
+  </body>
 </html>
