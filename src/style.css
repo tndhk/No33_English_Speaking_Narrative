@@ -1263,18 +1263,34 @@ input[type='range'] {
   margin: 0;
 }
 
-/* Illustrations (Emojis with 3D feel) */
+/* Illustrations (Emojis with 3D feel and Glassmorphism) */
 .bento-illustration {
-  font-size: 4.5rem;
-  margin-bottom: 0.75rem;
-  filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.3));
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+
+  /* Glassmorphism Container */
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); /* Slightly reduced opacity for cleaner look */
+  backdrop-filter: blur(4px);
+  border-radius: 1rem;
+
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   z-index: 2;
-  display: inline-block;
 }
 
 .bento-card:hover .bento-illustration {
-  transform: scale(1.1) rotate(6deg) translateY(-8px);
+  transform: translateY(-8px) scale(1.05);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 40px 0 rgba(56, 189, 248, 0.2); /* Glow on hover */
 }
 
 /* Specific Card Decorations */
