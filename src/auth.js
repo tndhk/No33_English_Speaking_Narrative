@@ -19,7 +19,10 @@ const authState = {
 export async function initAuth() {
   try {
     // Get current session
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
 
     if (error) {
       console.error('Error getting session:', error);
@@ -37,13 +40,28 @@ export async function initAuth() {
       authState.session = session;
       authState.user = session?.user || null;
 
+      // Handle token refresh
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('[Auth] Token automatically refreshed');
+      }
+
+      // Handle sign out cleanup
+      if (event === 'SIGNED_OUT') {
+        console.log('[Auth] User signed out, clearing local data');
+        // Clear local storage
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+
       // Trigger UI update
       updateAuthUI();
 
       // Dispatch custom event for other modules to listen to
-      window.dispatchEvent(new CustomEvent('authStateChanged', {
-        detail: { user: authState.user, session: authState.session, event }
-      }));
+      window.dispatchEvent(
+        new CustomEvent('authStateChanged', {
+          detail: { user: authState.user, session: authState.session, event },
+        })
+      );
     });
 
     return authState.user;
@@ -116,7 +134,7 @@ export async function signInWithGoogle() {
       provider: 'google',
       options: {
         redirectTo: window.location.origin,
-      }
+      },
     });
 
     if (error) throw error;
@@ -233,7 +251,6 @@ export function renderAuthUI(container) {
   }
 }
 
-
 /**
  * Update auth UI (called when auth state changes)
  */
@@ -258,7 +275,6 @@ function updateAuthUI() {
     }
   }
 }
-
 
 // Export for global access
 window.auth = {

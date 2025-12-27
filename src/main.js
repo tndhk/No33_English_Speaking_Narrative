@@ -7,6 +7,7 @@ import {
   DAILY_LIMIT,
   DATE_OPTIONS_EN,
 } from './constants.js';
+import { escapeHtml } from './utils/sanitize.js';
 
 // Global State
 window.state = {
@@ -423,6 +424,7 @@ async function generateNarrative() {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`,
+        'X-Requested-With': 'XMLHttpRequest',
       },
       body: JSON.stringify({
         category: state.category,
@@ -472,6 +474,16 @@ function renderResult() {
         ${renderResultActions()}
     `;
 
+  // Event listener for sentence click-to-speak
+  const sentenceSpans = result.querySelectorAll('.sentence-text');
+  sentenceSpans.forEach((span) => {
+    span.addEventListener('click', () => {
+      const sentence = span.dataset.sentence;
+      const index = span.dataset.index;
+      window.speak(sentence, index);
+    });
+  });
+
   // Event listener for implicit editing if we ever enable it
   const textarea = result.querySelector('.editable-narrative');
   if (textarea) {
@@ -509,10 +521,10 @@ function renderNarrativeSection(sentences, data) {
                 ${sentences
                   .map(
                     (s, i) => `
-                    <span class="sentence-text" 
-                            data-index="${i}" 
-                            style="cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: all 0.2s;"
-                            onclick="window.speak('${s.replace(/'/g, "\\'")}', ${i})">${s}</span> 
+                    <span class="sentence-text"
+                            data-index="${i}"
+                            data-sentence="${escapeHtml(s)}"
+                            style="cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: all 0.2s;">${escapeHtml(s)}</span>
                 `
                   )
                   .join('')}
@@ -538,9 +550,9 @@ function renderKeyPhrases(phrases) {
                   .map(
                     (p) => `
                     <div class="card" style="background: rgba(255, 255, 255, 0.03); padding: 1.25rem; border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color);">
-                        <div style="font-weight:700; color:var(--text-primary); margin-bottom:0.25rem;">${p.phrase_en}</div>
-                        <div style="font-size:0.95rem; color: var(--accent-color); margin-bottom:0.5rem;">${p.meaning_ja}</div>
-                        <div style="font-size:0.85rem; color:var(--text-secondary); line-height: 1.4;">${p.usage_hint_ja}</div>
+                        <div style="font-weight:700; color:var(--text-primary); margin-bottom:0.25rem;">${escapeHtml(p.phrase_en)}</div>
+                        <div style="font-size:0.95rem; color: var(--accent-color); margin-bottom:0.5rem;">${escapeHtml(p.meaning_ja)}</div>
+                        <div style="font-size:0.85rem; color:var(--text-secondary); line-height: 1.4;">${escapeHtml(p.usage_hint_ja)}</div>
                     </div>
                 `
                   )
@@ -563,11 +575,11 @@ function renderAlternatives(alternatives) {
                     (alt) => `
                     <div class="card" style="background: rgba(255, 255, 255, 0.03); padding: 1.25rem; border: 1px solid var(--border-color); border-left: 4px solid #f59e0b;">
                         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <span style="color: var(--text-secondary); font-size: 0.9rem;">${alt.original_en}</span>
+                            <span style="color: var(--text-secondary); font-size: 0.9rem;">${escapeHtml(alt.original_en)}</span>
                             <span style="color: var(--text-tertiary);">→</span>
-                            <span style="color: #f59e0b; font-weight: 600;">${alt.alternative_en}</span>
+                            <span style="color: #f59e0b; font-weight: 600;">${escapeHtml(alt.alternative_en)}</span>
                         </div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">${alt.nuance_ja}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">${escapeHtml(alt.nuance_ja)}</div>
                     </div>
                 `
                   )
@@ -585,7 +597,7 @@ function renderRecallTest(test) {
             </h3>
             <p style="color:var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.95rem;">ポイントを意識して英語で言ってみましょう：</p>
             <div style="background: rgba(15, 23, 42, 0.5); padding: 1.5rem; border-radius: 0.75rem; border: 1px dashed var(--border-color); line-height: 1.6;">
-                ${test.prompt_ja}
+                ${escapeHtml(test.prompt_ja)}
             </div>
         </section>
     `;

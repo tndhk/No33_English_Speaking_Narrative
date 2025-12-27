@@ -1,5 +1,86 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Security constants for input validation
+const MAX_ANSWER_LENGTH = 500;
+const MAX_TOTAL_LENGTH = 2000;
+const MAX_ANSWERS = 10;
+
+/**
+ * Sanitize input for LLM to prevent prompt injection attacks
+ * @param {string} input - The user input to sanitize
+ * @returns {string} The sanitized input
+ */
+function sanitizeForLLM(input) {
+  if (typeof input !== 'string') return '';
+
+  return input
+    .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove control characters
+    .replace(/<\/?[a-z_]+[^>]*>/gi, '') // Remove HTML/XML tags and attributes
+    .replace(/[{}[\]]/g, '') // Remove structure characters
+    .slice(0, MAX_ANSWER_LENGTH);
+}
+
+/**
+ * Check rate limit for user
+ * @param {string} userId - Supabase user ID
+ * @param {Object} env - Cloudflare environment with KV binding
+ * @returns {Promise<{allowed: boolean, remaining: number}>}
+ */
+async function checkRateLimit(userId, env) {
+  if (!env.RATE_LIMIT_KV) {
+    console.warn('RATE_LIMIT_KV not bound, skipping rate limit');
+    return { allowed: true, remaining: 10 };
+  }
+
+  const key = `ratelimit:generate:${userId}`;
+  const now = Date.now();
+  const windowMs = 3600000; // 1 hour
+  const maxRequests = 10;
+
+  try {
+    // Get existing rate limit data
+    const data = await env.RATE_LIMIT_KV.get(key, { type: 'json' });
+
+    if (data) {
+      const { count, resetAt } = data;
+
+      if (now < resetAt) {
+        // Still within the same window
+        if (count >= maxRequests) {
+          return { allowed: false, remaining: 0, resetAt };
+        }
+        // Increment count
+        await env.RATE_LIMIT_KV.put(
+          key,
+          JSON.stringify({ count: count + 1, resetAt }),
+          { expirationTtl: Math.ceil((resetAt - now) / 1000) }
+        );
+        return { allowed: true, remaining: maxRequests - (count + 1) };
+      } else {
+        // Window expired, reset
+        await env.RATE_LIMIT_KV.put(
+          key,
+          JSON.stringify({ count: 1, resetAt: now + windowMs }),
+          { expirationTtl: 3600 }
+        );
+        return { allowed: true, remaining: maxRequests - 1 };
+      }
+    } else {
+      // First request from this user
+      await env.RATE_LIMIT_KV.put(
+        key,
+        JSON.stringify({ count: 1, resetAt: now + windowMs }),
+        { expirationTtl: 3600 }
+      );
+      return { allowed: true, remaining: maxRequests - 1 };
+    }
+  } catch (error) {
+    console.error('Error checking rate limit:', error);
+    // Fail open on error, but log it
+    return { allowed: true, remaining: 10 };
+  }
+}
+
 // Simplified manual validator to avoid Ajv content security policy issues in Cloudflare Workers
 const validateSchema = (data) => {
   const errors = [];
@@ -442,14 +523,52 @@ export async function onRequestPost(context) {
       );
     }
 
+    // --- Rate Limit Check ---
+    const rateLimitResult = await checkRateLimit(user.id, env);
+    if (!rateLimitResult.allowed) {
+      console.warn(`Rate limit exceeded for user ${user.id}`);
+      return new Response(
+        JSON.stringify({
+          error: 'Rate limit exceeded. Please try again in 1 hour.',
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': '3600',
+          },
+        }
+      );
+    }
+
     // --- Main Logic ---
     const { category, answers, settings } = await request.json();
     console.log('Request received:', { category, answers, settings });
 
-    // Escape user inputs to prevent prompt injection
+    // Input validation to prevent prompt injection attacks
+    if (!Array.isArray(answers) || answers.length > MAX_ANSWERS) {
+      return new Response(
+        JSON.stringify({
+          error: 'Invalid answers format or exceeds maximum count',
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const totalLength = answers.join('').length;
+    if (totalLength > MAX_TOTAL_LENGTH) {
+      return new Response(
+        JSON.stringify({
+          error: 'Input exceeds maximum length',
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Sanitize user inputs to prevent prompt injection
     const sanitizedAnswers = answers
       .map((a, i) => {
-        const safeText = (a || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeText = sanitizeForLLM(a || '');
         return `  Question ${i + 1}: ${safeText}`;
       })
       .join('\n');

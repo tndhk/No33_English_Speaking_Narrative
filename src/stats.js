@@ -4,6 +4,7 @@
  */
 
 import { CATEGORY_LABELS } from './constants.js';
+import { escapeHtml } from './utils/sanitize.js';
 
 // Helper to format category for display
 function formatCategory(cat) {
@@ -30,7 +31,7 @@ async function renderReviewDashboard() {
   // 1. "Years ago today" (same month/day from past years)
   // 2. Reviews due today
   // 3. Random memory
-  let featuredTitle = "";
+  let featuredTitle = '';
   let featuredNarrative = null;
 
   if (narratives.length > 0) {
@@ -38,27 +39,31 @@ async function renderReviewDashboard() {
     const todayMonthDay = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     // Look for "years ago today" entries
-    const yearsAgoNarratives = narratives.filter(n => {
-      const createdDate = new Date(n.created_at);
-      const createdMonthDay = `${String(createdDate.getMonth() + 1).padStart(2, '0')}-${String(createdDate.getDate()).padStart(2, '0')}`;
-      const yearsDiff = today.getFullYear() - createdDate.getFullYear();
-      return createdMonthDay === todayMonthDay && yearsDiff > 0;
-    }).sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Oldest first
+    const yearsAgoNarratives = narratives
+      .filter((n) => {
+        const createdDate = new Date(n.created_at);
+        const createdMonthDay = `${String(createdDate.getMonth() + 1).padStart(2, '0')}-${String(createdDate.getDate()).padStart(2, '0')}`;
+        const yearsDiff = today.getFullYear() - createdDate.getFullYear();
+        return createdMonthDay === todayMonthDay && yearsDiff > 0;
+      })
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Oldest first
 
     if (yearsAgoNarratives.length > 0) {
       // Prioritize "years ago today"
       featuredNarrative = yearsAgoNarratives[0];
-      const yearsAgo = today.getFullYear() - new Date(featuredNarrative.created_at).getFullYear();
+      const yearsAgo =
+        today.getFullYear() -
+        new Date(featuredNarrative.created_at).getFullYear();
       featuredTitle = `${yearsAgo}年前の今日`;
     } else if (dueToday.length > 0) {
       // If there are reviews due, pick the first one
       featuredNarrative = dueToday[0];
-      featuredTitle = "読み返してみませんか？";
+      featuredTitle = '読み返してみませんか？';
     } else {
       // Random memory
       const idx = Math.floor(Math.random() * narratives.length);
       featuredNarrative = narratives[idx];
-      featuredTitle = "思い出の1ページ";
+      featuredTitle = '思い出の1ページ';
     }
   }
 
@@ -69,7 +74,9 @@ async function renderReviewDashboard() {
 
   // Featured Memory Card
   if (featuredNarrative) {
-    const dateStr = new Date(featuredNarrative.created_at).toLocaleDateString('ja-JP');
+    const dateStr = new Date(featuredNarrative.created_at).toLocaleDateString(
+      'ja-JP'
+    );
     html += `
         <div class="narrative-card" onclick="window.viewNarrativeDetails('${featuredNarrative.id}')" style="position: relative; background: #1e293b; padding: 2rem; border-radius: 1rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 12px -2px rgba(0, 0, 0, 0.15), 0 4px 8px -2px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';">
             <div style="position: absolute; top: -12px; left: 24px; background: var(--accent-color); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
@@ -84,7 +91,7 @@ async function renderReviewDashboard() {
             </div>
             
             <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; line-height: 1.8; color: var(--text-primary); margin-bottom: 1rem; font-style: italic;">
-                "${featuredNarrative.narrative_en.substring(0, 120)}${featuredNarrative.narrative_en.length > 120 ? '...' : ''}"
+                "${escapeHtml(featuredNarrative.narrative_en.substring(0, 120))}${featuredNarrative.narrative_en.length > 120 ? '...' : ''}"
             </div>
         </div>
       `;
@@ -143,7 +150,7 @@ async function renderReviewDashboard() {
 window.calendarState = {
   currentYear: new Date().getFullYear(),
   currentMonth: new Date().getMonth(), // 0-indexed
-  selectedDate: null
+  selectedDate: null,
 };
 
 /**
@@ -188,7 +195,6 @@ async function renderHistoryPage() {
     </div>
   `;
 
-
   container.innerHTML = html;
   window.renderCalendar();
 }
@@ -201,15 +207,29 @@ window.renderCalendar = () => {
   const month = window.calendarState.currentMonth;
 
   // Update Label
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  document.getElementById('calendar-month-label').textContent = `${monthNames[month]} ${year}`;
+  const monthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  document.getElementById('calendar-month-label').textContent =
+    `${monthNames[month]} ${year}`;
 
   const grid = document.getElementById('calendar-grid');
   grid.innerHTML = '';
 
   // Day headers
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  days.forEach(d => {
+  days.forEach((d) => {
     const div = document.createElement('div');
     div.className = 'calendar-header';
     div.textContent = d;
@@ -234,7 +254,9 @@ window.renderCalendar = () => {
 
     // Check for entries
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const entries = window.allNarratives.filter(n => n.created_at.startsWith(dateStr));
+    const entries = window.allNarratives.filter((n) =>
+      n.created_at.startsWith(dateStr)
+    );
 
     if (entries.length > 0) {
       div.classList.add('has-entry');
@@ -284,16 +306,20 @@ window.selectDate = (dateStr) => {
   label.textContent = `Entries for ${dateStr}`;
   container.innerHTML = '';
 
-  const entries = window.allNarratives.filter(n => n.created_at.startsWith(dateStr));
+  const entries = window.allNarratives.filter((n) =>
+    n.created_at.startsWith(dateStr)
+  );
 
   if (entries.length === 0) {
-    container.innerHTML = '<p style="color:var(--text-secondary)">No entries for this day.</p>';
+    container.innerHTML =
+      '<p style="color:var(--text-secondary)">No entries for this day.</p>';
     return;
   }
 
-  entries.forEach(n => {
+  entries.forEach((n) => {
     const el = document.createElement('div');
-    el.style.cssText = 'background: #1e293b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 3px solid var(--accent-color);';
+    el.style.cssText =
+      'background: #1e293b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 3px solid var(--accent-color);';
     el.innerHTML = `
             <div style="font-weight: bold; margin-bottom: 0.5rem;">${formatCategory(n.category)}</div>
             <div style="margin-bottom: 0.5rem; white-space: pre-wrap;">${n.narrative_en}</div>
@@ -317,24 +343,28 @@ async function renderNarrativeDetailView(narrativeId) {
 
   const narrative = await window.storage?.getNarrativeById(narrativeId);
   if (!narrative) {
-    container.innerHTML = '<p style="color:var(--text-secondary)">Narrative not found.</p>';
+    container.innerHTML =
+      '<p style="color:var(--text-secondary)">Narrative not found.</p>';
     return;
   }
 
   const dateStr = new Date(narrative.created_at).toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   });
 
-  const contextText = (narrative.user_answers && narrative.user_answers.length > 0 && narrative.user_answers.some(a => a.trim()))
-    ? narrative.user_answers.filter(a => a && a.trim()).join('\n')
-    : (narrative.recall_test?.prompt_ja || '')
-      .replace(/について教えてください[。？]?/g, '')
-      .replace(/書いてみましょう[。？]?/g, '')
-      .replace(/書いてみよう[。？]?/g, '')
-      .replace(/教えて[。？]?/g, '')
-      .trim();
+  const contextText =
+    narrative.user_answers &&
+    narrative.user_answers.length > 0 &&
+    narrative.user_answers.some((a) => a.trim())
+      ? narrative.user_answers.filter((a) => a && a.trim()).join('\n')
+      : (narrative.recall_test?.prompt_ja || '')
+          .replace(/について教えてください[。？]?/g, '')
+          .replace(/書いてみましょう[。？]?/g, '')
+          .replace(/書いてみよう[。？]?/g, '')
+          .replace(/教えて[。？]?/g, '')
+          .trim();
 
   let html = `
     <!-- Back Button -->
@@ -358,13 +388,23 @@ async function renderNarrativeDetailView(narrativeId) {
       text-align: left;
     ">
       <!-- Memory Section -->
-      ${contextText ? `
+      ${
+        contextText
+          ? `
         <div style="margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px dashed rgba(255,255,255,0.1);">
-          ${contextText.split('\n').filter(line => line.trim()).map(line => `
+          ${contextText
+            .split('\n')
+            .filter((line) => line.trim())
+            .map(
+              (line) => `
             <p style="margin-bottom: 0.5rem; line-height: 1.6; color: var(--text-secondary); font-size: 0.95rem;">${line}</p>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
-      ` : ''}
+      `
+          : ''
+      }
 
       <!-- English Narrative Section -->
       <div style="margin-bottom: 2rem;">
@@ -374,21 +414,30 @@ async function renderNarrativeDetailView(narrativeId) {
       </div>
 
       <!-- Key Phrases Section -->
-      ${narrative.key_phrases && narrative.key_phrases.length > 0 ? `
+      ${
+        narrative.key_phrases && narrative.key_phrases.length > 0
+          ? `
         <details class="key-phrases-details" style="background: rgba(255,255,255,0.03); border-radius: 0.75rem; overflow: hidden;">
           <summary style="padding: 1rem; cursor: pointer; font-size: 0.8rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; outline: none; list-style: none;">
             ▶ Key Phrases
           </summary>
           <div style="padding: 0 1rem 1rem 1rem;">
-            ${narrative.key_phrases.slice(0, 3).map((p, idx) => `
+            ${narrative.key_phrases
+              .slice(0, 3)
+              .map(
+                (p, idx) => `
               <div style="display: flex; flex-direction: column; margin-bottom: 0.75rem; padding-bottom: 0.75rem; ${idx < narrative.key_phrases.slice(0, 3).length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.05);' : ''}">
                 <div style="color: var(--accent-color); font-weight: 500; font-size: 0.95rem; margin-bottom: 0.2rem;">${p.phrase_en}</div>
                 <div style="color: var(--text-secondary); font-size: 0.85rem;">${p.meaning_ja}</div>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
         </details>
-      ` : ''}
+      `
+          : ''
+      }
     </div>
 
 
@@ -414,7 +463,6 @@ window.goToReviewDashboard = async function () {
   await window.renderReviewDashboard();
 };
 
-
 window.goToHistory = async function () {
   window.state.currentView = 'history';
   await window.updateNavigation();
@@ -431,7 +479,10 @@ window.goToGenerate = function () {
 window.startReview = async function (options = {}) {
   window.showLoading('Preparing review...');
   try {
-    const success = await window.initReviewSession({ order: 'oldest_first', ...options });
+    const success = await window.initReviewSession({
+      order: 'oldest_first',
+      ...options,
+    });
     if (!success) {
       alert('振り返る日記がありません');
       return;
@@ -469,4 +520,3 @@ window.deleteNarrative = async function (id) {
     window.hideLoading();
   }
 };
-
